@@ -1,0 +1,68 @@
+{
+  "probeStartedAt": "2026-09-04T14:37:52.292Z",
+  "probeCompletedAt": "2026-09-04T14:37:55.447Z",
+  "provider": {
+    "base_url": "https://api.qnaigc.com/v1",
+    "model_id": "deepseek/deepseek-v4-flash-vision-exp"
+  },
+  "results": {
+    "api_compatibility": {
+      "pass": true,
+      "endpoint": "chat_completions",
+      "status": 200,
+      "hasId": true,
+      "hasChoices": true,
+      "responseShape": [
+        "id",
+        "object",
+        "created",
+        "model",
+        "choices",
+        "usage"
+      ]
+    },
+    "sse_streaming": {
+      "pass": true,
+      "endpoint": "chat_completions",
+      "status": 200,
+      "contentType": "text/event-stream",
+      "isSSE": true,
+      "totalChunks": 105,
+      "totalBytes": 3555,
+      "sampleChunks": [
+        "data: {\"id\":\"chatcmpl-5cc2fd05b8e544f28fd0b1101a4d95cd\",\"object\":\"chat.completio",
+        "data: {\"id\":\"chatcmpl-5cc2fd05b8e544f28fd0b1101a4d95cd\",\"object\":\"chat.completio",
+        "data: {\"id\":\"chatcmpl-5cc2fd05b8e544f28fd0b1101a4d95cd\",\"object\":\"chat.completio",
+        "data: {\"id\":\"chatcmpl-5cc2fd05b8e544f28fd0b1101a4d95cd\",\"object\":\"chat.completio",
+        "data: {\"id\":\"chatcmpl-5cc2fd05b8e544f28fd0b1101a4d95cd\",\"object\":\"chat.completio"
+      ]
+    },
+    "tool_calling": {
+      "pass": true,
+      "endpoint": "chat_completions",
+      "status": 200,
+      "toolCallFound": true,
+      "toolCallDetails": [
+        {
+          "type": "chat_completions_tool_call",
+          "name": "get_weather",
+          "arguments": "present"
+        }
+      ],
+      "responseShape": [
+        "id",
+        "object",
+        "created",
+        "model",
+        "choices",
+        "usage"
+      ]
+    }
+  },
+  "overall": {
+    "pass": true,
+    "stopConditionTriggered": false,
+    "stopConditionReason": null
+  },
+  "note": "API key is NOT included in this report. Only base_url and model_id are recorded."
+}
