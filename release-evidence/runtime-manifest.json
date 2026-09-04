@@ -1,0 +1,20 @@
+{
+  "platform": "win32",
+  "arch": "x64",
+  "targetTriple": "x86_64-pc-windows-msvc",
+  "version": "0.153.2",
+  "sha256": "e86ffd96751ded51f669b520d70ba3139b514eb36313a8eeeedde37baa7b58e3",
+  "sourceUrl": "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-x86_64-pc-windows-msvc.exe",
+  "npmPackage": "@openai/codex@0.153.2",
+  "npmPlatformPackage": "@openai/codex-win32-x64@npm:@openai/codex@0.153.2-win32-x64",
+  "binaryPath": "runtime/codex.exe",
+  "binarySizeBytes": 295447856,
+  "downloadedAt": "2026-09-04T09:50:00Z",
+  "mirrors": [
+    "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-x86_64-pc-windows-msvc.exe",
+    "https://github.com/openai/codex/releases/download/rust-v0.153.2/codex-x86_64-pc-windows-msvc.exe.zip"
+  ],
+  "offlineImportVerified": true,
+  "offlineImportPath": "runtime/codex.exe",
+  "notes": "Binary sourced from global npm install (@openai/codex@0.153.2) platform-specific package @openai/codex-win32-x64. Copied to runtime/ for project-managed pinning. GitHub direct download was blocked by network; npm alias install succeeded via internal mirror."
+}

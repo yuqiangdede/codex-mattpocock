@@ -23,8 +23,10 @@ cache/*
 logs/*
 !logs/.gitkeep
 
-# Release evidence
-release-evidence/
+# Release evidence (keep manifests, exclude large artifacts)
+release-evidence/*
+!release-evidence/runtime-manifest.json
+!release-evidence/.gitkeep
 
 # OS
 .DS_Store
