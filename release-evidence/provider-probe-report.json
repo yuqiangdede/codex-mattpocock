@@ -64,5 +64,121 @@
     "stopConditionTriggered": false,
     "stopConditionReason": null
   },
-  "note": "API key is NOT included in this report. Only base_url and model_id are recorded."
+  "note": "API key is NOT included in this report. Only base_url and model_id are recorded.",
+  "config_fingerprint": {
+    "fingerprint": "779e0b7888672406491413091d6228596e03900c470c2be3045966fe9aa1baa0",
+    "credential_tag": "c852c707e40b8dd1"
+  },
+  "invalidationTests": {
+    "testedAt": "2026-09-04T14:40:43.698Z",
+    "completedAt": "2026-09-04T14:40:43.704Z",
+    "testCount": 5,
+    "allPassed": true,
+    "results": [
+      {
+        "name": "No change — should be VALID",
+        "config": {
+          "base_url": "https://api.qnaigc.com/v1",
+          "model_id": "deepseek/deepseek-v4-flash-vision-exp",
+          "credential_tag": "c852c707e40b8dd1"
+        },
+        "expectedValid": true,
+        "actualValid": true,
+        "passed": true,
+        "reason": null,
+        "changedField": null,
+        "changes": []
+      },
+      {
+        "name": "Changed base_url — should be INVALID",
+        "config": {
+          "base_url": "https://api.different-provider.com/v1",
+          "model_id": "deepseek/deepseek-v4-flash-vision-exp",
+          "credential_tag": "c852c707e40b8dd1"
+        },
+        "expectedValid": false,
+        "actualValid": false,
+        "passed": true,
+        "reason": "Config changed: base_url",
+        "changedField": "base_url",
+        "changes": [
+          {
+            "field": "base_url",
+            "oldValue": "https://api.qnaigc.com/v1",
+            "newValue": "https://api.different-provider.com/v1"
+          }
+        ]
+      },
+      {
+        "name": "Changed model_id — should be INVALID",
+        "config": {
+          "base_url": "https://api.qnaigc.com/v1",
+          "model_id": "openai/gpt-4o-mini",
+          "credential_tag": "c852c707e40b8dd1"
+        },
+        "expectedValid": false,
+        "actualValid": false,
+        "passed": true,
+        "reason": "Config changed: model_id",
+        "changedField": "model_id",
+        "changes": [
+          {
+            "field": "model_id",
+            "oldValue": "deepseek/deepseek-v4-flash-vision-exp",
+            "newValue": "openai/gpt-4o-mini"
+          }
+        ]
+      },
+      {
+        "name": "Changed credential — should be INVALID",
+        "config": {
+          "base_url": "https://api.qnaigc.com/v1",
+          "model_id": "deepseek/deepseek-v4-flash-vision-exp",
+          "credential_tag": "ea04d9972d12cd65"
+        },
+        "expectedValid": false,
+        "actualValid": false,
+        "passed": true,
+        "reason": "Config changed: credential",
+        "changedField": "credential",
+        "changes": [
+          {
+            "field": "credential",
+            "oldValue": "c852c707e40b8dd1",
+            "newValue": "ea04d9972d12cd65"
+          }
+        ]
+      },
+      {
+        "name": "All three changed — should be INVALID",
+        "config": {
+          "base_url": "https://api.new-provider.com/v2",
+          "model_id": "anthropic/claude-3.5-sonnet",
+          "credential_tag": "bea0a60fbd6d53ae"
+        },
+        "expectedValid": false,
+        "actualValid": false,
+        "passed": true,
+        "reason": "Config changed: base_url, model_id, credential",
+        "changedField": "base_url, model_id, credential",
+        "changes": [
+          {
+            "field": "base_url",
+            "oldValue": "https://api.qnaigc.com/v1",
+            "newValue": "https://api.new-provider.com/v2"
+          },
+          {
+            "field": "model_id",
+            "oldValue": "deepseek/deepseek-v4-flash-vision-exp",
+            "newValue": "anthropic/claude-3.5-sonnet"
+          },
+          {
+            "field": "credential",
+            "oldValue": "c852c707e40b8dd1",
+            "newValue": "bea0a60fbd6d53ae"
+          }
+        ]
+      }
+    ]
+  }
 }
