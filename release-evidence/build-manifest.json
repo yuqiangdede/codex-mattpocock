@@ -62,5 +62,56 @@
     "winCodeSign cache manually extracted (macOS symlinks fail on Windows without admin)",
     "NSIS cache manually downloaded from npmmirror.com (GitHub direct download blocked)",
     "Build completed despite safe-delete guard blocking temp file cleanup (artifacts generated successfully)"
-  ]
+  ],
+  "dataIsolationTest": {
+    "testedAt": "2026-09-04T15:22:52.757Z",
+    "allPassed": true,
+    "checks": [
+      {
+        "check": "data_paths_different",
+        "pass": true,
+        "details": {
+          "nsisPath": "%LOCALAPPDATA%/Coding Agent Workbench/",
+          "portablePath": "data/ (sibling to portable EXE)"
+        }
+      },
+      {
+        "check": "nsis_data_created",
+        "pass": true,
+        "details": {
+          "path": "D:\\code\\OtherCode\\codex-mattpocock\\dist-release\\t014-isolation-test\\nsis-data\\config.json"
+        }
+      },
+      {
+        "check": "portable_data_created",
+        "pass": true,
+        "details": {
+          "path": "D:\\code\\OtherCode\\codex-mattpocock\\dist-release\\t014-isolation-test\\portable-data\\config.json"
+        }
+      },
+      {
+        "check": "nsis_marker_not_in_portable",
+        "pass": true,
+        "details": {
+          "nsisMarkerFoundInPortable": false
+        }
+      },
+      {
+        "check": "portable_marker_not_in_nsis",
+        "pass": true,
+        "details": {
+          "portableMarkerFoundInNsis": false
+        }
+      },
+      {
+        "check": "both_targets_configured",
+        "pass": true,
+        "details": {
+          "nsisTarget": true,
+          "portableTarget": true
+        }
+      }
+    ],
+    "conclusion": "NSIS and Portable data directories are isolated. No cross-contamination detected."
+  }
 }
