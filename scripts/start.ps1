@@ -16,19 +16,15 @@
 param()
 
 $ErrorActionPreference = "Stop"
-$projectRoot = Split-Path -Parent $PSScriptRoot
+
+. (Join-Path $PSScriptRoot "common.ps1")
+$projectRoot = Get-ProjectRoot
 
 Write-Host "[start] Project root: $projectRoot" -ForegroundColor Cyan
 
-# Verify dependencies are installed
-$nodeModules = Join-Path $projectRoot "node_modules"
-if (-not (Test-Path $nodeModules)) {
-    Write-Host "[start] node_modules not found, running init..." -ForegroundColor Yellow
-    & (Join-Path $PSScriptRoot "init.ps1")
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "init failed, cannot start."
-        exit 1
-    }
+# Ensure dependencies are installed
+if (-not (Ensure-Dependencies $projectRoot)) {
+    exit 1
 }
 
 # Start electron-vite dev

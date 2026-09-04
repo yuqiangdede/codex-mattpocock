@@ -21,7 +21,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$projectRoot = Split-Path -Parent $PSScriptRoot
+
+. (Join-Path $PSScriptRoot "common.ps1")
+$projectRoot = Get-ProjectRoot
 
 Write-Host "[init] Project root: $projectRoot"
 
