@@ -30,6 +30,7 @@ release-evidence/*
 !release-evidence/schema-hash.txt
 !release-evidence/protocol-trace/
 !release-evidence/protocol-trace/initialize-trace.jsonl
+!release-evidence/protocol-trace/thread-lifecycle-trace.jsonl
 !release-evidence/protocol-trace/api-boundary.md
 # Schema dirs are too large for git, tracked via hash only
 release-evidence/protocol-trace/typescript-types/
