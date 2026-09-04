@@ -31,7 +31,12 @@ release-evidence/*
 !release-evidence/protocol-trace/
 !release-evidence/protocol-trace/initialize-trace.jsonl
 !release-evidence/protocol-trace/thread-lifecycle-trace.jsonl
+!release-evidence/protocol-trace/turn-control-trace.jsonl
+!release-evidence/protocol-trace/approval-mechanism-trace.jsonl
+!release-evidence/protocol-trace/reviewer-subagent-trace.jsonl
 !release-evidence/protocol-trace/api-boundary.md
+!release-evidence/failure-injection/
+!release-evidence/failure-injection/disconnect-no-replay-trace.jsonl
 # Schema dirs are too large for git, tracked via hash only
 release-evidence/protocol-trace/typescript-types/
 release-evidence/protocol-trace/json-schema/
