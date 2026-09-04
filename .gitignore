@@ -23,10 +23,18 @@ cache/*
 logs/*
 !logs/.gitkeep
 
-# Release evidence (keep manifests, exclude large artifacts)
+# Release evidence (keep manifests and key traces, exclude large schema dirs)
 release-evidence/*
-!release-evidence/runtime-manifest.json
 !release-evidence/.gitkeep
+!release-evidence/runtime-manifest.json
+!release-evidence/schema-hash.txt
+!release-evidence/protocol-trace/
+!release-evidence/protocol-trace/initialize-trace.jsonl
+!release-evidence/protocol-trace/api-boundary.md
+# Schema dirs are too large for git, tracked via hash only
+release-evidence/protocol-trace/typescript-types/
+release-evidence/protocol-trace/json-schema/
+release-evidence/schema/
 
 # OS
 .DS_Store
