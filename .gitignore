@@ -41,6 +41,7 @@ release-evidence/*
 !release-evidence/sqlite-packaged-test.json
 !release-evidence/secret-isolation-report.json
 !release-evidence/build-manifest.json
+!release-evidence/go-no-go-decision.md
 # Schema dirs are too large for git, tracked via hash only
 release-evidence/protocol-trace/typescript-types/
 release-evidence/protocol-trace/json-schema/
