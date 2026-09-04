@@ -1,0 +1,3 @@
+# 原样捆绑上游 Engineering Skill 并由 Workflow 编排
+
+MVP Skill Bundle 包含 `setup-matt-pocock-skills`、`grill-with-docs`、`grilling`、`domain-modeling`、`to-spec`、`to-tickets`、`implement`、`tdd`、`code-review`、`codebase-design` 和 `diagnosing-bugs`。上游目录保持原文、元数据和引用资源不变，产品保存 Commit、逐文件 SHA256、MIT License 与 Third-Party Notice；Workbench 用自有 Workflow Definition 注入 Worktree、Artifact 和 Gate 约束。`diagnosing-bugs` 只允许用户显式调用，不绑定或自动触发 Requirement Delivery Workflow；其 Bash HITL 兜底由产品提供标明来源的 PowerShell 补充。`implement` 的 Review 和 Commit 只发生在 Child Task Worktree，最终 Integration Candidate 仍使用独立 Review Session 和两个 Reviewer Subagent。
