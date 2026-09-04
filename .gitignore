@@ -38,6 +38,7 @@ release-evidence/*
 !release-evidence/failure-injection/
 !release-evidence/failure-injection/disconnect-no-replay-trace.jsonl
 !release-evidence/provider-probe-report.json
+!release-evidence/sqlite-packaged-test.json
 # Schema dirs are too large for git, tracked via hash only
 release-evidence/protocol-trace/typescript-types/
 release-evidence/protocol-trace/json-schema/

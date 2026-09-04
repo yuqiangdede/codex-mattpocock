@@ -1,0 +1,78 @@
+{
+  "testStartedAt": "2026-09-04T14:56:41.193Z",
+  "testCompletedAt": "2026-09-04T14:57:11.514Z",
+  "environment": {
+    "electron": "35.7.5",
+    "node": "v22.22.2",
+    "packaged": true,
+    "utilityProcess": true
+  },
+  "results": [
+    {
+      "test": "journal_mode=WAL",
+      "pass": true,
+      "expected": "wal",
+      "actual": "wal"
+    },
+    {
+      "test": "synchronous=FULL",
+      "pass": true,
+      "expected": 2,
+      "actual": 2
+    },
+    {
+      "test": "foreign_keys=ON",
+      "pass": true,
+      "expected": 1,
+      "actual": 1
+    },
+    {
+      "test": "trusted_schema=OFF",
+      "pass": true,
+      "expected": 0,
+      "actual": 0
+    },
+    {
+      "test": "transaction_rollback",
+      "pass": true,
+      "aliceBalanceAfterRollback": 100
+    },
+    {
+      "test": "foreign_key_cascade_delete",
+      "pass": true,
+      "childrenRemaining": 0,
+      "expected": 0
+    },
+    {
+      "test": "concurrent_read_no_block",
+      "pass": true,
+      "reader1Value": 0,
+      "reader2Value": 0,
+      "writerValueAfter": 42
+    },
+    {
+      "test": "busy_timeout",
+      "pass": true,
+      "expected": 5000,
+      "actual": 5000,
+      "rawPragma": {
+        "timeout": 5000
+      }
+    }
+  ],
+  "summary": {
+    "done": true,
+    "allPassed": true,
+    "testCount": 8,
+    "passedCount": 8,
+    "failedCount": 0
+  },
+  "overall": {
+    "pass": true,
+    "stopConditionTriggered": false,
+    "stopConditionReason": null
+  },
+  "rawStdout": "\r\n{\"test\":\"journal_mode=WAL\",\"pass\":true,\"expected\":\"wal\",\"actual\":\"wal\"}\n{\"test\":\"synchronous=FULL\",\"pass\":true,\"expected\":2,\"actual\":2}\n{\"test\":\"foreign_keys=ON\",\"pass\":true,\"expected\":1,\"actual\":1}\n{\"test\":\"trusted_schema=OFF\",\"pass\":true,\"expected\":0,\"actual\":0}\n{\"test\":\"transaction_rollback\",\"pass\":true,\"aliceBalanceAfterRollback\":100}\n{\"test\":\"foreign_key_cascade_delete\",\"pass\":true,\"childrenRemaining\":0,\"expected\":0}\n{\"test\":\"concurrent_read_no_block\",\"pass\":true,\"reader1Value\":0,\"reader2Value\":0,\"writerValueAfter\":42}\n{\"test\":\"busy_timeout\",\"pass\":true,\"expected\":5000,\"actual\":5000,\"rawPragma\":{\"timeout\":5000}}\n{\"done\":true,\"allPassed\":true,\"testCount\":8,\"passedCount\":8,\"failedCount\":0}\n{\"error\":\"child exited with code 143\"}\n",
+  "rawStderr": "(node:23888) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `electron --trace-warnings ...` to show where the warning was created)\n[25100:0904/225711.220:ERROR:network_service_instance_impl.cc(612)] Network service crashed, restarting service.\r\n",
+  "exitCode": 0
+}
