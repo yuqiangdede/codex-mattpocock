@@ -1,0 +1,66 @@
+{
+  "buildStartedAt": "2026-09-04T15:05:00.000Z",
+  "buildCompletedAt": "2026-09-04T15:21:30.000Z",
+  "builder": {
+    "name": "electron-builder",
+    "version": "25.1.8"
+  },
+  "electron": {
+    "version": "35.7.5",
+    "nodeVersion": "22.16.0",
+    "arch": "x64",
+    "platform": "win32"
+  },
+  "artifacts": [
+    {
+      "type": "nsis-installer",
+      "path": "dist-release/Coding Agent Workbench-0.0.0-x64.exe",
+      "size": 85758215,
+      "sizeMB": 81.7,
+      "exists": true,
+      "nonEmpty": true,
+      "signed": false,
+      "signingNote": "Signing is deferred to M5 Gate. No code signing in scaffold."
+    },
+    {
+      "type": "portable-exe",
+      "path": "dist-release/Coding Agent Workbench-0.0.0-x64-portable.exe",
+      "size": 77988065,
+      "sizeMB": 74.4,
+      "exists": true,
+      "nonEmpty": true,
+      "signed": false,
+      "signingNote": "Signing is deferred to M5 Gate. No code signing in scaffold."
+    },
+    {
+      "type": "unpacked",
+      "path": "dist-release/win-unpacked/Coding Agent Workbench.exe",
+      "size": 201233920,
+      "sizeMB": 191.9,
+      "exists": true,
+      "nonEmpty": true
+    }
+  ],
+  "dataDirectories": {
+    "nsis": {
+      "path": "%LOCALAPPDATA%/Coding Agent Workbench/",
+      "description": "NSIS Installer data directory"
+    },
+    "portable": {
+      "path": "data/ (sibling to portable EXE)",
+      "description": "Portable EXE data directory"
+    }
+  },
+  "signing": {
+    "performed": false,
+    "reason": "Signing is deferred to M5 Gate per spec. CSC_IDENTITY_AUTO_DISCOVERY=false set."
+  },
+  "buildNotes": [
+    "Electron upgraded from 33.4.11 to 35.7.5 for node:sqlite support (T-011)",
+    "electron-builder.json files path updated from apps/desktop/*/dist to out/",
+    "package.json main field set to out/main/index.js",
+    "winCodeSign cache manually extracted (macOS symlinks fail on Windows without admin)",
+    "NSIS cache manually downloaded from npmmirror.com (GitHub direct download blocked)",
+    "Build completed despite safe-delete guard blocking temp file cleanup (artifacts generated successfully)"
+  ]
+}

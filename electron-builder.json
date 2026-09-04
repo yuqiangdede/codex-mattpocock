@@ -3,12 +3,10 @@
   "appId": "com.workbench.coding-agent",
   "productName": "Coding Agent Workbench",
   "directories": {
-    "output": "dist-electron"
+    "output": "dist-release"
   },
   "files": [
-    "apps/desktop/main/dist/**/*",
-    "apps/desktop/preload/dist/**/*",
-    "apps/desktop/renderer/dist/**/*",
+    "out/**/*",
     "packages/*/dist/**/*",
     "package.json"
   ],
@@ -23,7 +21,9 @@
         "arch": ["x64"]
       }
     ],
-    "artifactName": "${productName}-${version}-${arch}.${ext}"
+    "artifactName": "${productName}-${version}-${arch}.${ext}",
+    "signtoolOptions": null,
+    "forceCodeSigning": false
   },
   "nsis": {
     "oneClick": false,
@@ -33,8 +33,5 @@
   "portable": {
     "artifactName": "${productName}-${version}-${arch}-portable.${ext}"
   },
-  "extraResources": [],
-  "signing": {
-    "comment": "Signing is deferred to M5 Gate. No code signing in scaffold."
-  }
+  "extraResources": []
 }
