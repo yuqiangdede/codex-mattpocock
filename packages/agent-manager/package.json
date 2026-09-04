@@ -1,0 +1,13 @@
+{
+  "name": "@workbench/agent-manager",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@workbench/shared": "workspace:*",
+    "@workbench/protocol": "workspace:*",
+    "@workbench/storage": "workspace:*"
+  }
+}

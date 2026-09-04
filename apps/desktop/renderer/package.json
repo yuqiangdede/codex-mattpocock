@@ -1,0 +1,12 @@
+{
+  "name": "@workbench/desktop-renderer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.tsx",
+  "dependencies": {
+    "@workbench/shared": "workspace:*",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  }
+}

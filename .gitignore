@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-electron/
+out/
+*.tsbuildinfo
+
+# Runtime
+runtime/*
+!runtime/.gitkeep
+
+# Data
+data/*
+!data/.gitkeep
+
+# Cache
+cache/*
+!cache/.gitkeep
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Release evidence
+release-evidence/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Temp files
+_tmp_*
+electron.vite.config.*.mjs

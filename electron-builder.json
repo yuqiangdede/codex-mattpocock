@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.workbench.coding-agent",
+  "productName": "Coding Agent Workbench",
+  "directories": {
+    "output": "dist-electron"
+  },
+  "files": [
+    "apps/desktop/main/dist/**/*",
+    "apps/desktop/preload/dist/**/*",
+    "apps/desktop/renderer/dist/**/*",
+    "packages/*/dist/**/*",
+    "package.json"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-${version}-${arch}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "perMachine": false
+  },
+  "portable": {
+    "artifactName": "${productName}-${version}-${arch}-portable.${ext}"
+  },
+  "extraResources": [],
+  "signing": {
+    "comment": "Signing is deferred to M5 Gate. No code signing in scaffold."
+  }
+}

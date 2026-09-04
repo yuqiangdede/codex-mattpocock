@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true
+  },
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/protocol" },
+    { "path": "./packages/storage" },
+    { "path": "./packages/agent-manager" },
+    { "path": "./packages/workflow" },
+    { "path": "./packages/runtime-codex" },
+    { "path": "./packages/git-worktree" },
+    { "path": "./apps/desktop/main" },
+    { "path": "./apps/desktop/preload" },
+    { "path": "./apps/desktop/renderer" }
+  ],
+  "files": []
+}
