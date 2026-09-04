@@ -14,7 +14,8 @@ labels:
 
 ## Decisions so far
 
-<!-- Closed tickets appear here as one-line links. -->
+- [Validate the pinned Codex App Server contract](validate-codex-app-server-contract.md): 固定 stdio JSONL 和公开稳定的 Thread/Turn、Approval、Review、Skill/MCP 能力；将 WebSocket、进程控制、动态工具和分页历史排除在生产 MVP 承诺之外。
+- [Prove the Windows provider and storage packaging baseline](prove-provider-and-storage-packaging.md): 当前只有设计证据；必须用固定 Electron/Node 的 Packaged Utility Process Spike 验证 `node:sqlite`、受控 Provider Helper 和 Windows 制品，才可声称平台可行。
 
 ## Not yet specified
 

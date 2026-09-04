@@ -4,6 +4,7 @@ labels:
   - wayfinder:research
 parent: map.md
 blocking: []
+status: closed
 ---
 
 ## Question
@@ -12,4 +13,6 @@ blocking: []
 
 ## Resolution
 
-<!-- Fill only when this ticket is closed. -->
+以当前官方 App Server 文档为准，M0 只承诺默认 `stdio` 的 JSONL 双向 JSON-RPC 连接，以及公开的 `initialize`、`thread/start|resume|fork`、`turn/start|steer|interrupt`、Approval、`review/start`、Skill 和 MCP API。WebSocket、`process/*`、动态工具、分页历史和其他要求 `experimentalApi` 的功能不进入 MVP 基线。每个固定 Bundle 必须生成并保存对应 Schema Hash，并执行 `initialize → thread/start → turn/start → steer → interrupt` 的脱敏 JSONL 黑盒 Trace；本研究没有运行会产生 Rollout 的调用，因此这是一项未执行的验收清单。
+
+参考：[Codex App Server Protocol](https://developers.openai.com/codex/app-server/#protocol)、[Experimental API opt-in](https://developers.openai.com/codex/app-server/#experimental-api-opt-in)。
