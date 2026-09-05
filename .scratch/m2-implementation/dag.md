@@ -4,7 +4,7 @@
 
 | # | Title | Blocked by | Status |
 |---|-------|-------------|--------|
-| 01 | Agent Manager 进程化与 Event Store 接管 | — | ready-for-agent |
+| 01 | Agent Manager 进程化与 Event Store 接管 | — | completed |
 | 02 | Codex Runtime Session 生命周期管理 | 01 | ready-for-agent |
 | 03 | 持久化恢复协调 | 01 | ready-for-agent |
 | 04 | 故障注入验证矩阵 | 03 | ready-for-agent |
@@ -28,7 +28,10 @@
 
 ## Frontier (can start immediately)
 
-- **01** — Agent Manager 进程化与 Event Store 接管
+- **02** — Codex Runtime Session 生命周期管理
+- **03** — 持久化恢复协调
+
+01 已完成；验证与审查记录见 [validation-01.md](validation-01.md)。
 
 ## Parallelism
 

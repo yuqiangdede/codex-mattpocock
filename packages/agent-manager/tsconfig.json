@@ -9,6 +9,7 @@
   "references": [
     { "path": "../shared" },
     { "path": "../protocol" },
-    { "path": "../storage" }
+    { "path": "../storage" },
+    { "path": "../git-worktree" }
   ]
 }

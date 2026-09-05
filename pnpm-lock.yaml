@@ -47,6 +47,9 @@ importers:
 
   packages/agent-manager:
     dependencies:
+      '@workbench/git-worktree':
+        specifier: workspace:*
+        version: link:../git-worktree
       '@workbench/protocol':
         specifier: workspace:*
         version: link:../protocol

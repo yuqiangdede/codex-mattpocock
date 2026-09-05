@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-09-05T13:20:14.586Z",
+  "results": [
+    {
+      "suite": "agent-manager",
+      "exitCode": 0,
+      "output": "\r\n(node:23952) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `electron --trace-warnings ...` to show where the warning was created)\nPASS: 真实 Utility Process 创建、读取 Project 并转发事件\nPASS: 原有 Preload → Main → Utility Process 完整八步切片、重载与业务错误\nPASS: 请求 ACK 与重复请求去重\n(node:12280) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `electron --trace-warnings ...` to show where the warning was created)\nPASS: 正常退出关闭数据库并持久化活动 Turn 中断状态\n(node:7460) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `electron --trace-warnings ...` to show where the warning was created)\nPASS: 杀死 Agent Manager 后 Main 报告错误，待处理及后续请求失败\n(node:23048) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `electron --trace-warnings ...` to show where the warning was created)\nPASS: 强杀 Main 后无遗留子进程，重开将遗留 RUNNING 标为 INTERRUPTED / UNCERTAIN\n"
+    },
+    {
+      "suite": "boot-smoke",
+      "exitCode": 0,
+      "output": "\r\n(node:25280) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `electron --trace-warnings ...` to show where the warning was created)\n[smoke] managerReady=true windowCreated=true managerPid=25280\n"
+    }
+  ]
+}

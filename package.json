@@ -10,6 +10,8 @@
   "main": "out/main/index.js",
   "packageManager": "pnpm@11.25.0",
   "scripts": {
+    "test": "node scripts/test-m1.mjs && node tests/integration/interrupt-transaction.mjs && node scripts/test-agent-manager.mjs",
+    "test:agent-manager": "node scripts/test-agent-manager.mjs",
     "build": "tsc --build && electron-vite build",
     "dev": "electron-vite dev",
     "typecheck": "tsc --build",

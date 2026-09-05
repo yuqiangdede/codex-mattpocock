@@ -208,9 +208,14 @@ export class WorkbenchDatabase {
   // Event operations (single transaction: event + projection + outbox)
   // ================================================================
 
-  appendEvent(event: NormalizedEvent): void {
-    const tx = this.db.exec("BEGIN TRANSACTION");
+  appendEvent(event: NormalizedEvent, taskState?: Pick<Task, 'executionState' | 'attentionState'>): void {
+    this.db.exec("BEGIN TRANSACTION");
     try {
+      // 进程中断的状态与事件必须原子落盘，避免任务状态和 Timeline 分离。
+      if (taskState) {
+        if (!event.taskId) throw new Error('状态变更事件必须关联 Task');
+        this.updateTaskStates(event.taskId, taskState.executionState, taskState.attentionState);
+      }
       // Insert normalized event
       this.db
         .prepare(

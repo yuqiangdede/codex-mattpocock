@@ -8,9 +8,7 @@
     Executes verification in layers. Currently supports:
       - typecheck: TypeScript Project References build check
       - spike: M0+M1 Implementation Readiness Spike validations
-
-    Future gates (integration, e2e) will be added as milestones
-    are reached.
+      - integration: M1 回归、事务回滚、真实 Utility Process 与 Electron 冒烟
 
     .NOTES
     Standard script contract per release-gates.md.
@@ -21,7 +19,7 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [ValidateSet("typecheck", "spike", "all")]
+    [ValidateSet("typecheck", "spike", "integration", "all")]
     [string[]]$Gate = @("typecheck")
 )
 
@@ -41,7 +39,7 @@ if (-not (Ensure-Dependencies $projectRoot)) {
 
 # Resolve Node.js path (prefer managed runtime)
 $nodeExe = $null
-$managedNode = Join-Path $env:USERPROFILE ".workbuddy\binaries\node\versions\22.22.2-2\node.exe"
+$managedNode = Join-Path $projectRoot 'runtime/node/node.exe'
 if (Test-Path $managedNode) {
     $nodeExe = $managedNode
 } elseif (Get-Command node -ErrorAction SilentlyContinue) {
@@ -57,7 +55,7 @@ try {
     # Gate: typecheck
     if ($Gate -contains "typecheck" -or $Gate -contains "all") {
         Write-Host "`n[verify] === Gate: typecheck ===" -ForegroundColor Cyan
-        pnpm tsc --build
+        & $nodeExe (Join-Path $projectRoot 'node_modules/typescript/bin/tsc') --build
         if ($LASTEXITCODE -eq 0) {
             Write-Host "[verify] typecheck: PASS" -ForegroundColor Green
         } else {
@@ -284,6 +282,24 @@ try {
             $exitCode = 1
         } else {
             Write-Host "[verify] All expected evidence files present." -ForegroundColor Green
+        }
+    }
+
+    # 真实集成验证先构建，再执行原有回归、跨进程切片和 Electron 冒烟。
+    if ($Gate -contains 'integration' -or $Gate -contains 'all') {
+        & $nodeExe (Join-Path $projectRoot 'node_modules/typescript/bin/tsc') --build
+        if ($LASTEXITCODE -eq 0) {
+            & $nodeExe (Join-Path $projectRoot 'node_modules/electron-vite/bin/electron-vite.js') build
+        }
+        if ($LASTEXITCODE -ne 0) {
+            $exitCode = 1
+        } else {
+            & $nodeExe (Join-Path $projectRoot 'scripts/test-m1.mjs')
+            if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
+            & $nodeExe (Join-Path $projectRoot 'tests/integration/interrupt-transaction.mjs')
+            if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
+            & $nodeExe (Join-Path $projectRoot 'scripts/test-agent-manager.mjs')
+            if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
         }
     }
 

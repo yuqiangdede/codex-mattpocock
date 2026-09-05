@@ -4,11 +4,13 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] Agent Manager 作为 Utility Process 启动，持有唯一 WorkbenchDatabase 写连接
-- [ ] Main 进程不再直接 import @workbench/storage 或操作 DB；所有 DB 操作通过 Agent Manager 消息通道
-- [ ] M1 的全部 8 步切片在进程化后仍然通过（E2E 脚本 18/18 PASS）
-- [ ] Electron 冒烟测试（WORKBENCH_SMOKE_TEST=1）在进程化后退出 0
-- [ ] Agent Manager 进程崩溃后 Main 进程能检测并报告（不需要自动恢复，03 工单负责恢复）
-- [ ] Preload API 接口不变，Renderer 无感知后端进程化
+- [x] Agent Manager 作为 Utility Process 启动，持有唯一 WorkbenchDatabase 写连接
+- [x] Main 进程不再直接 import @workbench/storage 或操作 DB；所有 DB 操作通过 Agent Manager 消息通道
+- [x] M1 的全部 8 步切片在进程化后仍然通过（E2E 脚本 18/18 PASS）
+- [x] Electron 冒烟测试（WORKBENCH_SMOKE_TEST=1）在进程化后退出 0
+- [x] Agent Manager 进程崩溃后 Main 进程能检测并报告（不需要自动恢复，03 工单负责恢复）
+- [x] Preload API 接口不变，Renderer 无感知后端进程化
+
+验证入口：`./scripts/verify.ps1 -Gate integration`。回归与真实跨进程测试均通过，实施过程、两轴审查和平台边界见 [validation-01.md](../validation-01.md)。

@@ -14,9 +14,13 @@ export default defineConfig({
     resolve: { alias: workbenchAliases },
     build: {
       rollupOptions: {
-        input: resolve(__dirname, "apps/desktop/main/src/index.ts"),
+        input: {
+          index: resolve(__dirname, "apps/desktop/main/src/index.ts"),
+          "manager-bridge": resolve(__dirname, "apps/desktop/main/src/manager-bridge.ts"),
+          "agent-manager": resolve(__dirname, "packages/agent-manager/src/index.ts"),
+        },
         output: {
-          entryFileNames: "index.js",
+          entryFileNames: "[name].js",
         },
       },
     },

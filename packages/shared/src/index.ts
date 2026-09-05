@@ -56,6 +56,7 @@ export type EventType =
   | "ApprovalRequested"
   | "ApprovalDecided"
   | "TurnCompleted"
+  | "TurnInterrupted"
   | "VerificationCompleted";
 
 export interface NormalizedEvent {
@@ -166,3 +167,5 @@ export function err<T>(error: string): IpcResult<T> {
 export function generateId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
+
+export * from './manager-protocol.js';

@@ -8,6 +8,7 @@
   "dependencies": {
     "@workbench/shared": "workspace:*",
     "@workbench/protocol": "workspace:*",
-    "@workbench/storage": "workspace:*"
+    "@workbench/storage": "workspace:*",
+    "@workbench/git-worktree": "workspace:*"
   }
 }

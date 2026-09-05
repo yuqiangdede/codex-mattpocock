@@ -51,6 +51,7 @@ release-evidence/*
 !release-evidence/secret-isolation-report.json
 !release-evidence/build-manifest.json
 !release-evidence/m1-slice-e2e.json
+!release-evidence/agent-manager-integration.json
 !release-evidence/go-no-go-decision.md
 # Schema dirs are too large for git, tracked via hash only
 release-evidence/protocol-trace/typescript-types/
