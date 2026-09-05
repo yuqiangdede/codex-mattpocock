@@ -18,6 +18,8 @@
     "paths": {
       "@workbench/shared": ["packages/shared/src/index.ts"],
       "@workbench/storage": ["packages/storage/src/index.ts"],
+      "@workbench/protocol": ["packages/protocol/src/index.ts"],
+      "@workbench/runtime-codex": ["packages/runtime-codex/src/index.ts"],
       "@workbench/git-worktree": ["packages/git-worktree/src/index.ts"]
     }
   },

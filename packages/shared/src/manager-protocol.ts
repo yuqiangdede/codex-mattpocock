@@ -3,8 +3,8 @@ import type { IpcResult } from './index';
 export const MANAGER_PROTOCOL_VERSION = 1;
 export const MANAGER_REQUEST_CHANNELS = [
   'project:scan', 'project:list', 'task:create', 'task:list', 'task:get',
-  'worktree:create', 'turn:start', 'approval:decide', 'diff:get',
-  'verify:run', 'recovery:load',
+  'worktree:create', 'turn:start', 'turn:steer', 'turn:interrupt',
+  'approval:decide', 'diff:get', 'verify:run', 'recovery:load',
 ] as const;
 export interface ManagerEnvelope {
   version: number;

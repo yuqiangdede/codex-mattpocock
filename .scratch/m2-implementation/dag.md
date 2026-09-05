@@ -5,7 +5,7 @@
 | # | Title | Blocked by | Status |
 |---|-------|-------------|--------|
 | 01 | Agent Manager 进程化与 Event Store 接管 | — | completed |
-| 02 | Codex Runtime Session 生命周期管理 | 01 | ready-for-agent |
+| 02 | Codex Runtime Session 生命周期管理 | 01 | completed |
 | 03 | 持久化恢复协调 | 01 | ready-for-agent |
 | 04 | 故障注入验证矩阵 | 03 | ready-for-agent |
 | 05 | Ticket DAG 调度与 Child Task | 02 | ready-for-agent |
@@ -28,19 +28,21 @@
 
 ## Frontier (can start immediately)
 
-- **02** — Codex Runtime Session 生命周期管理
 - **03** — 持久化恢复协调
+- **05** — Ticket DAG 调度与 Child Task（依赖 02 完成）
 
 01 已完成；验证与审查记录见 [validation-01.md](validation-01.md)。
+02 已完成；验证与审查记录见 [validation-02.md](validation-02.md)。
 
 ## Parallelism
 
-After 01 completes:
-- 02 and 03 can run in parallel (both depend only on 01)
+After 01 + 02 complete:
+- 03 can run independently
+- 05 can run (depends on 02)
+- 03 + 05 can run in parallel
 - After 03 completes: 04 can start
-- After 02 completes: 05 can start
-- After 02 and 05 complete: 06 can start
-- After 05 and 06 complete: 07 can start
+- After 05 completes: 06 can start (with 02 already done)
+- After 05 + 06 complete: 07 can start
 
 ## Source
 

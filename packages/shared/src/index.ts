@@ -52,9 +52,15 @@ export type EventType =
   | "ProjectScanned"
   | "TaskCreated"
   | "WorktreeCreated"
+  | "RuntimeSessionOpened"
+  | "RuntimeSessionResumed"
   | "TurnStarted"
+  | "AgentMessageDelta"
+  | "ToolStarted"
+  | "ToolCompleted"
   | "ApprovalRequested"
   | "ApprovalDecided"
+  | "TurnSteered"
   | "TurnCompleted"
   | "TurnInterrupted"
   | "VerificationCompleted";
@@ -93,6 +99,10 @@ export interface ApprovalRequest {
   type: ApprovalType;
   target: string;
   summary: string;
+  /** Codex App Server 服务端请求的 JSON-RPC id；用于决策回写路由。 */
+  serverRequestId?: number;
+  /** 服务端请求方法名（exec / patch / ...），便于 Renderer 区分语义。 */
+  serverMethod?: string;
 }
 
 // ================================================================
@@ -132,6 +142,8 @@ export const IPC_CHANNELS = {
   TASK_GET: "task:get",
   WORKTREE_CREATE: "worktree:create",
   TURN_START: "turn:start",
+  TURN_STEER: "turn:steer",
+  TURN_INTERRUPT: "turn:interrupt",
   APPROVAL_REQUEST: "approval:request",
   APPROVAL_DECIDE: "approval:decide",
   DIFF_GET: "diff:get",

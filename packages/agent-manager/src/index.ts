@@ -9,25 +9,72 @@
  * 业务写入和事件存储运行于独立进程。
  */
 import type {} from 'electron';
+import * as path from 'node:path';
+import { existsSync } from 'node:fs';
 import { AgentManagerService } from './service';
-import { MANAGER_PROTOCOL_VERSION, isManagerEnvelope, validManagerRequest, err, type ManagerEnvelope } from '@workbench/shared';
+import {
+  RuntimeSessionManager,
+} from '@workbench/runtime-codex';
+import {
+  MANAGER_PROTOCOL_VERSION,
+  isManagerEnvelope,
+  validManagerRequest,
+  err,
+  type ManagerEnvelope,
+} from '@workbench/shared';
 
 const port = process.parentPort;
 if (!port) throw new Error('Agent Manager 必须由 Electron Utility Process 启动');
+const dataDir = process.argv[2];
+if (!dataDir) throw new Error('未传入 dataDir');
 let sequence = 0;
 const send = (message: Omit<ManagerEnvelope, 'version' | 'messageId'>) => {
   port.postMessage({ ...message, version: MANAGER_PROTOCOL_VERSION, messageId: ++sequence });
 };
-const service = new AgentManagerService(process.argv[2], (channel, payload) => {
-  send({ kind: 'notification', requestId: 0, channel, payload });
+
+/**
+ * 构造 Runtime Session Manager。codex 二进制路径由环境变量 WORKBENCH_CODEX_BIN
+ * 或 WORKBENCH_SMOKE_TEST 模式下的 runtime/codex.exe 提供；Provider 配置目录
+ * 落在 dataDir 下，独立于 Worktree 与 SQLite。
+ */
+function buildRuntime(dataDir: string): RuntimeSessionManager | undefined {
+  const codexBin = process.env.WORKBENCH_CODEX_BIN
+    ?? (existsSync(path.join(process.cwd(), 'runtime', 'codex.exe'))
+      ? path.join(process.cwd(), 'runtime', 'codex.exe')
+      : null);
+  if (!codexBin) {
+    console.warn('[agent-manager] 未找到 Codex 二进制；真实 Turn 通道将不可用');
+    return undefined;
+  }
+  const configDir = path.join(dataDir, 'runtime-config');
+  const codexHomeRoot = path.join(dataDir, 'codex-home');
+  return new RuntimeSessionManager({
+    binaryPath: codexBin,
+    codexHomeRoot,
+    configDir,
+    approvalPolicy: 'on-request',
+    sandbox: 'workspace-write',
+    onNotification: () => {},
+    onApprovalRequest: () => Promise.resolve('decline'),
+  });
+}
+
+const runtime = buildRuntime(dataDir);
+const service = new AgentManagerService({
+  dataDir,
+  notify: (channel, payload) => {
+    send({ kind: 'notification', requestId: 0, channel, payload });
+  },
+  runtime,
 });
+if (runtime) service.wireRuntimeCallbacks();
 let queue = Promise.resolve();
 let stopping = false;
-function shutdown(): void {
+async function shutdown(): Promise<void> {
   if (stopping) return;
   stopping = true;
-  void queue.then(() => {
-    service.close();
+  await queue.then(async () => {
+    await service.close();
     process.exit(0);
   }).catch(error => { console.error('Agent Manager 关闭失败', error); process.exit(1); });
 }

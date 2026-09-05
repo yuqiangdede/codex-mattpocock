@@ -9,6 +9,7 @@
     "@workbench/shared": "workspace:*",
     "@workbench/protocol": "workspace:*",
     "@workbench/storage": "workspace:*",
+    "@workbench/runtime-codex": "workspace:*",
     "@workbench/git-worktree": "workspace:*"
   }
 }

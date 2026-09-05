@@ -7,6 +7,8 @@ const workbenchAliases = {
   "@workbench/shared": resolve(__dirname, "packages/shared/src/index.ts"),
   "@workbench/storage": resolve(__dirname, "packages/storage/src/index.ts"),
   "@workbench/git-worktree": resolve(__dirname, "packages/git-worktree/src/index.ts"),
+  "@workbench/protocol": resolve(__dirname, "packages/protocol/src/index.ts"),
+  "@workbench/runtime-codex": resolve(__dirname, "packages/runtime-codex/src/index.ts"),
 };
 
 export default defineConfig({
