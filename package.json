@@ -17,12 +17,6 @@
     "init": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/init.ps1",
     "start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start.ps1"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "electron",
-      "esbuild"
-    ]
-  },
   "devDependencies": {
     "@openai/codex": "0.153.2",
     "@openai/codex-win32-x64": "npm:@openai/codex@0.153.2-win32-x64",

@@ -228,6 +228,21 @@ try {
             Check  = if ($dataIsolationPass) { "all isolation checks passed" } else { "isolation checks missing or failed" }
         }
 
+        # --- M1: Single Task Vertical Slice E2E ---
+        Write-Host "[verify] M1: Single Task Vertical Slice E2E..." -ForegroundColor DarkGray
+        $m1Report = Join-Path $evidenceDir "m1-slice-e2e.json"
+        $m1E2ePass = $false
+        if (Test-Path $m1Report) {
+            $m1Data = Get-Content $m1Report -Raw | ConvertFrom-Json
+            $m1E2ePass = $m1Data.overall.pass -eq $true
+        }
+        $spikeResults += [PSCustomObject]@{
+            Ticket = "M1"
+            Name   = "Single Task Vertical Slice E2E"
+            Pass   = $m1E2ePass
+            Check  = if ($m1E2ePass) { "all 18 slice checks passed" } else { "slice E2E missing or failed (run .scratch/m1-e2e/verify.mjs)" }
+        }
+
         # --- Print results ---
         Write-Host ""
         $spikeResults | ForEach-Object {
@@ -254,7 +269,8 @@ try {
             "provider-probe-report.json",
             "sqlite-packaged-test.json",
             "secret-isolation-report.json",
-            "build-manifest.json"
+            "build-manifest.json",
+            "m1-slice-e2e.json"
         )
         $missingFiles = @()
         foreach ($f in $expectedFiles) {
