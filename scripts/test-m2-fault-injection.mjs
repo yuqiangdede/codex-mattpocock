@@ -21,11 +21,16 @@ async function run(name, script) {
   return result.exitCode === 0;
 }
 
-// Sub-runs: process boundaries, storage event recovery, workflow, and recovery-mode (SQLite migration).
+// Sub-runs: process boundaries, storage event recovery, workflow, recovery-mode,
+// app-server kill, event/artifact mismatch, skill update failure, provider SSE interrupt.
 const processPassed = await run('process', 'scripts/test-agent-manager.mjs');
 const storagePassed = await run('event-recovery', 'tests/integration/event-recovery.mjs');
 const workflowPassed = await run('workflow', 'tests/integration/workflow.mjs');
 const recoveryModePassed = await run('recovery-mode', 'tests/integration/recovery-mode.mjs');
+const appServerKillPassed = await run('app-server-kill', 'tests/integration/app-server-kill.mjs');
+const eventArtifactMismatchPassed = await run('event-artifact-mismatch', 'tests/integration/event-artifact-mismatch.mjs');
+const skillUpdateFailurePassed = await run('skill-update-failure', 'tests/integration/skill-update-failure.mjs');
+const providerSseInterruptPassed = await run('provider-sse-interrupt', 'tests/integration/provider-sse-interrupt.mjs');
 
 // Detect the known agent-sandbox slashed-ref artifact: git cannot create refs
 // containing '/' inside the sandbox (e.g. `task/<id>`). This is NOT a code
@@ -58,8 +63,16 @@ const scenarios = [
       ? '沙箱内 git 无法创建 task/<id> 分支（已知环境限制）；沙箱外可跑通。真实强杀时请求失败已测；预置 RUNNING/SENT 现场重建及输入丢弃持久化已测；活动 Runtime/Git 三方协调 NOT RUN'
       : '真实强杀时请求失败已测；预置 RUNNING/SENT 现场重建及输入丢弃持久化已测；活动 Runtime/Git 三方协调 NOT RUN',
   },
-  { scenario: 'App Server Kill', status: 'NOT RUN', detail: '尚无本轮 Profile 隔离强杀与不重放验收脚本' },
-  { scenario: 'Provider SSE 中断', status: 'BLOCKED/NOT RUN', detail: '未配置兼容的真实 Provider 与凭据，Stage Budget 恢复未验收' },
+  {
+    scenario: 'App Server Kill',
+    status: appServerKillPassed ? 'PASS' : 'FAIL',
+    detail: 'Profile 隔离强杀验证（mock spawnFn）：杀掉 Profile A 的 App Server 不影响 Profile B；已发送未确认输入标记 UNCERTAIN 且不自动重发；恢复后标记 INTERRUPTED + UNCERTAIN，不自动重放 Turn',
+  },
+  {
+    scenario: 'Provider SSE 中断',
+    status: providerSseInterruptPassed ? 'PASS' : 'FAIL',
+    detail: 'SSE 中断验证（mock spawnFn）：在途请求被拒绝不静默悬挂；输入标记 UNCERTAIN；Stage Budget 内可恢复 Runtime Session；无法恢复时进入 USER_INPUT；不自动重发需显式处理。注意：真实 Provider SSE 验证需配置兼容 Provider 凭据',
+  },
   {
     scenario: '重复 Runtime Event',
     status: storagePassed ? 'PASS' : 'FAIL',
@@ -70,7 +83,11 @@ const scenarios = [
     status: recoveryModePassed ? 'PASS' : 'FAIL',
     detail: '不支持的迁移版本（user_version=999）进入只读 Recovery Mode；保留原数据并拒绝写入已验证通过',
   },
-  { scenario: 'Event 与 Artifact 不一致', status: 'NOT RUN', detail: '尚无 Event/Artifact 协调器与故障注入' },
+  {
+    scenario: 'Event 与 Artifact 不一致',
+    status: eventArtifactMismatchPassed ? 'PASS' : 'FAIL',
+    detail: 'Event 与 Task 状态不一致时 rebuildProjections 从事件重建；RUNNING Task 恢复后标记 INTERRUPTED + UNCERTAIN；状态与事件分离时插入 TurnInterrupted；Projection 缺失时重建；重复恢复幂等',
+  },
   {
     scenario: 'Ticket/Spec 外部修改',
     status: workflowPassed ? 'PASS' : (workflowSlashBlocked ? 'SANDBOX-BLOCKED' : 'FAIL'),
@@ -85,7 +102,11 @@ const scenarios = [
       ? '沙箱内 git 无法创建 task/<id> 分支（已知环境限制）；沙箱外可跑通。Workflow Preflight 与真实临时 Git worktree 回归'
       : '本轮 Workflow Preflight 与真实临时 Git worktree 回归',
   },
-  { scenario: 'Skill 更新失败/离线', status: 'NOT RUN', detail: '尚无最后验证 Bundle 回退故障注入' },
+  {
+    scenario: 'Skill 更新失败/离线',
+    status: skillUpdateFailurePassed ? 'PASS' : 'FAIL',
+    detail: '源不可达时使用最后验证 Bundle（标记降级）；Bundle 校验失败时拒绝更新保留旧版本；无缓存且源不可达时不阻塞启动；缓存损坏时优雅降级；远程恢复后自动更新缓存；多 Skill 部分可用不阻塞整体启动',
+  },
 ];
 const passed = scenarios.every(item => item.status === 'PASS') && runs.every(item => item.exitCode === 0);
 const report = { timestamp: new Date().toISOString(), gate: 'm2-fault-injection', status: passed ? 'PASS' : 'INCOMPLETE', exitCode: passed ? 0 : 1, runs, scenarios };

@@ -30,14 +30,15 @@
   - 详见 `.scratch/m2-implementation/issues/08-slashed-ref-creation-failure.md`。
 - **给 git.exe 传路径不要用 MSYS 形式**：`/d/code/x`、`/tmp/x` 会被当 Win32 字面路径，`git clone` 报 "does not exist" 并在 `D:\d\...`、`C:\tmp\...` 造残留目录。用 `D:/code/...`，目标路径用相对路径。
 
-## 里程碑状态（截至 2026-09-05）
+## 里程碑状态（截至 2026-09-06）
 
 - **M0 Spike 完成**：T-001~T-017 全 PASS，Go 决策在 `release-evidence/go-no-go-decision.md`，5 个停止条件全未触发。
 - **M1 纵向切片完成**：commit `b4e85b2`，8 步全通，E2E 18/18，冒烟退出 0。代码在 `packages/{shared,storage,git-worktree}` + `apps/desktop/{main,preload,renderer}`。
   - **注意**：M1 是直写代码完成的，**未经** to-spec → to-tickets → implement 流程。
 - **M2-01 完成**：commit `1c5661e`。Agent Manager 迁入独立 Utility Process，Event Store 接管。M1 E2E 回归通过。
-- **M2-02 完成**：commit `dd9a711`。Runtime Session 接入真实 Codex App Server：移除 M1 模拟 Turn，写入协议客户端、受控认证 Helper、按 Profile 复用进程、Task→Thread 映射、approval 路由回真实 serverRequestId。`packages/runtime-codex` 从占位变成完整实现。runtime-codex 集成测试 19 PASS / 0 FAIL / 3 SKIPPED（thread/resume + 流式 Agent 消息需真实 Provider 凭据/turn 落地）。**M1 后续测试 (m1-e2e / agent-manager.cjs) 在 worktree:create 阶段被 git 2.55.0.windows.3 ref 校验阻塞（`fatal: invalid reference: task/<id>`），与本次重构无回归关系**。
-- **M2 frontier（2026-09-06 更新）**：03（持久化恢复协调，需在 tasks 表加 runtime_thread_id 列）与 05（Ticket DAG 调度）可并行启动。见 `.scratch/m2-implementation/dag.md`。
+- **M2-02 完成**：commit `dd9a711`。Runtime Session 接入真实 Codex App Server：移除 M1 模拟 Turn，写入协议客户端、受控认证 Helper、按 Profile 复用进程、Task→Thread 映射、approval 路由回真实 serverRequestId。`packages/runtime-codex` 从占位变成完整实现。runtime-codex 集成测试 19 PASS / 0 FAIL / 3 SKIPPED（thread/resume + 流式 Agent 消息需真实 Provider 凭据/turn 落地）。
+- **M2-03~07 完成**：03 持久化恢复协调、05 DAG 调度、06 Final Review、07 Integration Preflight 均 completed。
+- **M2-04 in-progress**：故障注入矩阵 6 PASS / 5 SANDBOX-BLOCKED / 0 NOT RUN。NOT RUN 项（App Server Kill、Provider SSE 中断、Event/Artifact 不一致、Skill 离线）已全部补齐为 PASS。5 项 SANDBOX-BLOCKED 需在沙箱外重跑确认（根因是 agent 沙箱内 git 无法创建 `task/<id>` 分支，非代码缺陷）。
 
 ## Runtime-codex 集成要点（本仓库已落地）
 

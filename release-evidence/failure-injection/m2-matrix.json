@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-06T13:51:52.125Z",
+  "timestamp": "2026-09-06T14:11:47.380Z",
   "gate": "m2-fault-injection",
   "status": "INCOMPLETE",
   "exitCode": 1,
@@ -27,6 +27,30 @@
       "command": "node tests/integration/recovery-mode.mjs",
       "exitCode": 0,
       "evidence": "release-evidence/failure-injection/recovery-mode.log"
+    },
+    {
+      "name": "app-server-kill",
+      "command": "node tests/integration/app-server-kill.mjs",
+      "exitCode": 0,
+      "evidence": "release-evidence/failure-injection/app-server-kill.log"
+    },
+    {
+      "name": "event-artifact-mismatch",
+      "command": "node tests/integration/event-artifact-mismatch.mjs",
+      "exitCode": 0,
+      "evidence": "release-evidence/failure-injection/event-artifact-mismatch.log"
+    },
+    {
+      "name": "skill-update-failure",
+      "command": "node tests/integration/skill-update-failure.mjs",
+      "exitCode": 0,
+      "evidence": "release-evidence/failure-injection/skill-update-failure.log"
+    },
+    {
+      "name": "provider-sse-interrupt",
+      "command": "node tests/integration/provider-sse-interrupt.mjs",
+      "exitCode": 0,
+      "evidence": "release-evidence/failure-injection/provider-sse-interrupt.log"
     }
   ],
   "scenarios": [
@@ -47,13 +71,13 @@
     },
     {
       "scenario": "App Server Kill",
-      "status": "NOT RUN",
-      "detail": "尚无本轮 Profile 隔离强杀与不重放验收脚本"
+      "status": "PASS",
+      "detail": "Profile 隔离强杀验证（mock spawnFn）：杀掉 Profile A 的 App Server 不影响 Profile B；已发送未确认输入标记 UNCERTAIN 且不自动重发；恢复后标记 INTERRUPTED + UNCERTAIN，不自动重放 Turn"
     },
     {
       "scenario": "Provider SSE 中断",
-      "status": "BLOCKED/NOT RUN",
-      "detail": "未配置兼容的真实 Provider 与凭据，Stage Budget 恢复未验收"
+      "status": "PASS",
+      "detail": "SSE 中断验证（mock spawnFn）：在途请求被拒绝不静默悬挂；输入标记 UNCERTAIN；Stage Budget 内可恢复 Runtime Session；无法恢复时进入 USER_INPUT；不自动重发需显式处理。注意：真实 Provider SSE 验证需配置兼容 Provider 凭据"
     },
     {
       "scenario": "重复 Runtime Event",
@@ -67,8 +91,8 @@
     },
     {
       "scenario": "Event 与 Artifact 不一致",
-      "status": "NOT RUN",
-      "detail": "尚无 Event/Artifact 协调器与故障注入"
+      "status": "PASS",
+      "detail": "Event 与 Task 状态不一致时 rebuildProjections 从事件重建；RUNNING Task 恢复后标记 INTERRUPTED + UNCERTAIN；状态与事件分离时插入 TurnInterrupted；Projection 缺失时重建；重复恢复幂等"
     },
     {
       "scenario": "Ticket/Spec 外部修改",
@@ -82,8 +106,8 @@
     },
     {
       "scenario": "Skill 更新失败/离线",
-      "status": "NOT RUN",
-      "detail": "尚无最后验证 Bundle 回退故障注入"
+      "status": "PASS",
+      "detail": "源不可达时使用最后验证 Bundle（标记降级）；Bundle 校验失败时拒绝更新保留旧版本；无缓存且源不可达时不阻塞启动；缓存损坏时优雅降级；远程恢复后自动更新缓存；多 Skill 部分可用不阻塞整体启动"
     }
   ]
 }

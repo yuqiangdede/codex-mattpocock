@@ -1,29 +1,29 @@
 warning: in the working copy of 'base.txt', LF will be replaced by CRLF the next time Git touches it
 warning: in the working copy of 'base.txt', LF will be replaced by CRLF the next time Git touches it
-Preparing worktree (new branch 'task/parent-child-A-b808dea8-d92e-4d4e-8f21-5124bc4d03d3')
-fatal: invalid reference: task/parent-child-A-b808dea8-d92e-4d4e-8f21-5124bc4d03d3
+Preparing worktree (new branch 'task/parent-child-A-00de2562-3c80-4f06-b4df-b990de45d5f7')
+fatal: invalid reference: task/parent-child-A-00de2562-3c80-4f06-b4df-b990de45d5f7
 warning: in the working copy of 'base.txt', LF will be replaced by CRLF the next time Git touches it
-Preparing worktree (new branch 'task/parent-child-A-5211cb84-79fe-4b30-b64c-da65812a6c9c')
-fatal: invalid reference: task/parent-child-A-5211cb84-79fe-4b30-b64c-da65812a6c9c
+Preparing worktree (new branch 'task/parent-child-A-c2c60b80-7c55-4b08-9e46-64e61ee137ec')
+fatal: invalid reference: task/parent-child-A-c2c60b80-7c55-4b08-9e46-64e61ee137ec
 warning: in the working copy of 'base.txt', LF will be replaced by CRLF the next time Git touches it
-Preparing worktree (new branch 'task/parent-child-A-5b64b488-fabf-42af-bccd-353555e01f90')
-fatal: invalid reference: task/parent-child-A-5b64b488-fabf-42af-bccd-353555e01f90
+Preparing worktree (new branch 'task/parent-child-A-de528453-2a60-456e-a474-916a16c46ada')
+fatal: invalid reference: task/parent-child-A-de528453-2a60-456e-a474-916a16c46ada
 warning: in the working copy of 'base.txt', LF will be replaced by CRLF the next time Git touches it
-Preparing worktree (new branch 'task/parent-child-F-da79f130-66bf-4326-b1a9-f798b71333c5')
-fatal: invalid reference: task/parent-child-F-da79f130-66bf-4326-b1a9-f798b71333c5
-Preparing worktree (new branch 'task/parent-child-A-dc1c84cc-e3a1-4672-85f9-864908f003f2')
-fatal: invalid reference: task/parent-child-A-dc1c84cc-e3a1-4672-85f9-864908f003f2
+Preparing worktree (new branch 'task/parent-child-F-5dbc641c-d090-406e-89dc-4b5f9da9dd2c')
+fatal: invalid reference: task/parent-child-F-5dbc641c-d090-406e-89dc-4b5f9da9dd2c
+Preparing worktree (new branch 'task/parent-child-A-d6225fec-e89d-4ac4-8c45-9a34fdc5e71a')
+fatal: invalid reference: task/parent-child-A-d6225fec-e89d-4ac4-8c45-9a34fdc5e71a
 TAP version 13
 # Subtest: DAG 稳定身份、frontier 和环诊断
 ok 1 - DAG 稳定身份、frontier 和环诊断
   ---
-  duration_ms: 5391.4088
+  duration_ms: 6312.2394
   type: 'test'
   ...
 # Subtest: Preflight 拒绝 dirty、目标前进、Spec/Ticket 修改和失效验证并落盘证据
 not ok 2 - Preflight 拒绝 dirty、目标前进、Spec/Ticket 修改和失效验证并落盘证据
   ---
-  duration_ms: 5908.4444
+  duration_ms: 6199.4454
   type: 'test'
   location: 'D:\\code\\OtherCode\\codex-mattpocock\\tests\\integration\\workflow.mjs:36:1'
   failureType: 'testCodeFailure'
@@ -41,7 +41,7 @@ not ok 2 - Preflight 拒绝 dirty、目标前进、Spec/Ticket 修改和失效�
 # Subtest: 明确选择 merge、cherry-pick 或 patch 才集成且不 push
 not ok 3 - 明确选择 merge、cherry-pick 或 patch 才集成且不 push
   ---
-  duration_ms: 6081.4357
+  duration_ms: 6209.682
   type: 'test'
   location: 'D:\\code\\OtherCode\\codex-mattpocock\\tests\\integration\\workflow.mjs:53:1'
   failureType: 'testCodeFailure'
@@ -59,7 +59,7 @@ not ok 3 - 明确选择 merge、cherry-pick 或 patch 才集成且不 push
 # Subtest: Candidate 汇总已选 Child 并执行真实验证，Review 双 Session 严重发现与理由持久化
 not ok 4 - Candidate 汇总已选 Child 并执行真实验证，Review 双 Session 严重发现与理由持久化
   ---
-  duration_ms: 5876.4909
+  duration_ms: 22006.2974
   type: 'test'
   location: 'D:\\code\\OtherCode\\codex-mattpocock\\tests\\integration\\workflow.mjs:65:1'
   failureType: 'testCodeFailure'
@@ -76,7 +76,7 @@ not ok 4 - Candidate 汇总已选 Child 并执行真实验证，Review 双 Sessi
 # Subtest: Child 在独立真实 worktree 提交且依赖继承完成结果，失败不阻塞无关 Ticket
 not ok 5 - Child 在独立真实 worktree 提交且依赖继承完成结果，失败不阻塞无关 Ticket
   ---
-  duration_ms: 6760.5004
+  duration_ms: 7464.4225
   type: 'test'
   location: 'D:\\code\\OtherCode\\codex-mattpocock\\tests\\integration\\workflow.mjs:86:1'
   failureType: 'testCodeFailure'
@@ -96,4 +96,4 @@ not ok 5 - Child 在独立真实 worktree 提交且依赖继承完成结果，�
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 30029.6038
+# duration_ms 48209.6326

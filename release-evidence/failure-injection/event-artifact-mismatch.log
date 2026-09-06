@@ -1,0 +1,8 @@
+PASS: Event 与 Task 状态不一致时 rebuildProjections 从事件重建 Projection
+PASS: RUNNING Task 恢复后标记为 INTERRUPTED + UNCERTAIN
+PASS: 状态与事件分离时 recoverNonTerminalTasks 插入 TurnInterrupted 并标记 UNCERTAIN
+PASS: Projection 缺失时 rebuildProjections 从 Event 重建
+PASS: 不一致后需显式协调，不自动恢复为 RUNNING
+PASS: 重复恢复幂等，不产生重复事件
+(node:21568) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

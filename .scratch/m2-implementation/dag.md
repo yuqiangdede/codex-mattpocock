@@ -29,10 +29,11 @@
 
 ## Frontier (can start immediately)
 
-- **04** — 故障注入验证矩阵（in-progress：2 项 PASS、5 项 SANDBOX-BLOCKED、4 项 NOT RUN/BLOCKED）
+- **04** — 故障注入验证矩阵（in-progress：6 项 PASS、5 项 SANDBOX-BLOCKED、0 项 NOT RUN）
 
-> 03、05、06、07 均已完成。04 仍需补齐 App Server Kill、Provider SSE 中断、
-> Event/Artifact 不一致、Skill 离线等 NOT RUN 项，以及沙箱外重跑 SANDBOX-BLOCKED 项。
+> 03、05、06、07 均已完成。04 的 NOT RUN 项已全部补齐（App Server Kill、Provider SSE 中断、
+> Event/Artifact 不一致、Skill 离线均 PASS）。剩余 5 项 SANDBOX-BLOCKED 需在沙箱外重跑确认，
+> 根因是 agent 沙箱内 git 无法创建含 `/` 的 `task/<id>` 引用（见 issues/08），非代码缺陷。
 >
 > 08 是 agent 沙箱伪影，沙箱外 `git worktree add -b task/<id>` 与 M1 E2E（18/18）都正常。
 > 见 [issues/08](issues/08-slashed-ref-creation-failure.md)。
@@ -50,7 +51,7 @@ After 01 + 02 complete:
 - ~~03~~ completed
 - ~~05~~ completed
 - ~~03 + 05 parallel~~ done
-- After ~~03~~ completed: 04 in-progress (2 PASS / 5 SANDBOX-BLOCKED / 4 NOT RUN)
+- After ~~03~~ completed: 04 in-progress (6 PASS / 5 SANDBOX-BLOCKED / 0 NOT RUN)
 - After ~~05~~ completed: ~~06~~ completed
 - After ~~05 + 06~~ completed: ~~07~~ completed
 

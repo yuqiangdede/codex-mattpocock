@@ -1,0 +1,10 @@
+(node:7724) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS: SSE 中断后在途请求被拒绝，输入标记为 UNCERTAIN
+PASS: SSE 中断后可恢复 Runtime Session（Stage Budget 内恢复）
+PASS: 无法恢复时 Task 进入 USER_INPUT 状态
+PASS: SSE 中断后不自动重发，需显式处理不确定输入
+
+注意: 本脚本使用 mock spawnFn 验证协议层和框架行为。
+真实 Provider SSE 中断验证需配置兼容的 Provider Profile 和凭据后手动执行。
+当前 Provider (api.qnaigc.com) 不支持 Responses API，无法执行真实 Turn。
