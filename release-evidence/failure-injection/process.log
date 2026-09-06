@@ -1,0 +1,19 @@
+
+(node:40728) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `electron --trace-warnings ...` to show where the warning was created)
+PASS: 真实 Utility Process 创建、读取 Project 并转发事件
+AssertionError [ERR_ASSERTION]: Command failed: git worktree add -b task/task-mtpve3tu-w5t33r D:\code\OtherCode\codex-mattpocock\cache\manager-test-CAmqRB\data\worktrees\task-mtpve3tu-w5t33r
+Preparing worktree (new branch 'task/task-mtpve3tu-w5t33r')
+fatal: invalid reference: task/task-mtpve3tu-w5t33r
+
+
+false !== true
+
+    at value (D:\code\OtherCode\codex-mattpocock\tests\integration\agent-manager.cjs:60:12)
+    at async D:\code\OtherCode\codex-mattpocock\tests\integration\agent-manager.cjs:69:14 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual'
+}

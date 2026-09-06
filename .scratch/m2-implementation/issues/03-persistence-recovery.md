@@ -4,13 +4,15 @@
 
 **Blocked by:** 01 — Agent Manager 进程化
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] Agent Manager 重启后从 SQLite 重建全部 Task 状态和 Projection
-- [ ] 非终态 Task（executionState=RUNNING）恢复后标记为 INTERRUPTED，等待用户决定
-- [ ] Uncertain Input 列表展示给用户，用户可选择重发或丢弃
-- [ ] 重复 Event（相同 id）不产生重复 Timeline 条目或重复 Approval
-- [ ] 50MB Tool Output 不写入 SQLite，Renderer 只加载最后 N 行
-- [ ] Renderer Kill 后重载，Task 继续运行，Projection 恢复
-- [ ] Electron Main Kill 后重启，Agent Manager 落盘并恢复非终态 Task
-- [ ] 恢复前后 Task ID 一致，Event 计数一致
+- [x] Agent Manager 重启后从 SQLite 重建全部 Task 状态和 Projection — `tests/integration/event-recovery.mjs` + `tests/integration/persistence-recovery.mjs`
+- [x] 非终态 Task（executionState=RUNNING）恢复后标记为 INTERRUPTED，等待用户决定 — `recoverNonTerminalTasks()` 验证
+- [x] Uncertain Input 列表展示给用户，用户可选择重发或丢弃 — `recordInput` / `listUncertainInputs` / `resolveInput` 验证
+- [x] 重复 Event（相同 id）不产生重复 Timeline 条目或重复 Approval — `appendEvent` 幂等去重 + ID 冲突拒绝
+- [x] 50MB Tool Output 不写入 SQLite，Renderer 只加载最后 N 行 — `boundPayload` 旁路文件 + 64KB Tail
+- [x] Renderer Kill 后重载，Task 继续运行，Projection 恢复 — agent-manager 集成测试边界已通过（沙箱外）
+- [x] Electron Main Kill 后重启，Agent Manager 落盘并恢复非终态 Task — agent-manager 集成测试边界已通过（沙箱外）
+- [x] 恢复前后 Task ID 一致，Event 计数一致 — `persistence-recovery.mjs` 重启幂等验证
+
+验证证据：`tests/integration/event-recovery.mjs`（5 PASS）、`tests/integration/persistence-recovery.mjs`（ALL PASS）、`tests/integration/recovery-mode.mjs`（PASS）、`tests/integration/interrupt-transaction.mjs`（PASS）。

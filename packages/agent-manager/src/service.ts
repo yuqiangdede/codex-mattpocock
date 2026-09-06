@@ -59,22 +59,17 @@ export class AgentManagerService {
   >();
   private readonly handlers = new Map<string, Handler>();
   private runtime: RuntimeSessionManager | undefined;
+  private readonly startingTasks = new Set<string>();
 
   constructor(options: AgentManagerOptions) {
     this.dataDir = options.dataDir;
     this.notify = options.notify;
     this.runtime = options.runtime;
     this.db = new WorkbenchDatabase(path.join(options.dataDir, "workbench.db"));
-    // Windows 强杀 Main 时可能同时终止 Utility Process，无法依赖退出回调。
-    // 这里只阻止遗留 RUNNING 状态被当作仍在执行；完整恢复协调由 03 工单负责。
-    for (const task of this.db.listTasks()) {
-      if (task.executionState === 'RUNNING') {
-        this.db.appendEvent({
-          id: generateId('evt'), type: 'TurnInterrupted', taskId: task.id,
-          turnId: null, payload: { reason: 'unclean-manager-exit' },
-          timestamp: new Date().toISOString(),
-        }, { executionState: 'INTERRUPTED', attentionState: 'UNCERTAIN' });
-      }
+    // Windows 强杀可能跳过退出回调；启动时从事件重建，再持久化恢复决定。
+    if (!this.db.recoveryReason) {
+      this.db.rebuildProjections();
+      this.db.recoverNonTerminalTasks();
     }
     this.setupHandlers();
   }
@@ -93,6 +88,9 @@ export class AgentManagerService {
   }
 
   async request(channel: string, args: unknown[]): Promise<IpcResult<unknown>> {
+    if (this.db.recoveryReason && !['project:list', 'task:list', 'task:get', 'recovery:load', 'diff:get'].includes(channel)) {
+      return err(`只读 Recovery Mode：${this.db.recoveryReason}`);
+    }
     const handler = this.handlers.get(channel);
     if (!handler) return err("未知业务通道");
     return handler(args);
@@ -119,12 +117,15 @@ export class AgentManagerService {
     event: NormalizedEvent,
     taskState?: { executionState: string; attentionState: string },
   ): void {
+    let inserted: boolean;
     if (taskState) {
-      this.db.appendEvent(event, taskState as { executionState: import("@workbench/shared").ExecutionState; attentionState: import("@workbench/shared").AttentionState });
+      inserted = this.db.appendEvent(event, taskState as { executionState: import("@workbench/shared").ExecutionState; attentionState: import("@workbench/shared").AttentionState });
     } else {
-      this.db.appendEvent(event);
+      inserted = this.db.appendEvent(event);
     }
-    this.notify(IPC_CHANNELS.EVENT_STREAM, event);
+    // 广播存储后的受限载荷，不能把旁路前的 50MB 原文发送给 Renderer。
+    if (inserted) this.notify(IPC_CHANNELS.EVENT_STREAM,
+      event.taskId ? this.db.getEvents(event.taskId).find(saved => saved.id === event.id) : event);
   }
 
   private handleCodexNotification(
@@ -138,11 +139,52 @@ export class AgentManagerService {
       generateId,
     });
     if (!mapping) return;
+    if (mapping.event?.type === 'TurnCompleted') {
+      this.db.confirmTurnInputs(taskId, String(mapping.event.payload.turnId));
+    }
     if (mapping.event && mapping.taskState) {
       this.appendEvent(mapping.event, mapping.taskState);
     } else if (mapping.event) {
       this.appendEvent(mapping.event);
     }
+  }
+
+  private async sendInput(taskId: string, text: string, inputId?: string): Promise<IpcResult<{ turnId: string }>> {
+    if (this.startingTasks.has(taskId)) return err('Task 正在启动 Turn');
+    this.startingTasks.add(taskId);
+    let persistedId = inputId;
+    try {
+      if (!this.runtime) throw new Error('Runtime Session Manager 未初始化');
+      const task = this.db.getTask(taskId);
+      if (!task?.worktreePath) throw new Error('Task 尚未创建 Worktree');
+      if (task.executionState === 'RUNNING') throw new Error('Task 已在运行');
+      let session = this.runtime.getSession(taskId);
+      if (!session) {
+        const saved = this.db.getRuntimeSession(taskId);
+        session = saved
+          ? await this.runtime.resumeSession({ taskId, cwd: task.worktreePath, ...saved })
+          : await this.runtime.openSession({ taskId, cwd: task.worktreePath });
+        this.db.saveRuntimeSession(taskId, session.threadId, session.profileId);
+      }
+      // 写入成功后才能发送；传输失败不能证明服务端没有执行。
+      persistedId ??= this.db.recordInput(taskId, text).id;
+      const turnId = await this.runtime.startTurn(taskId, text);
+      this.db.bindInputTurn(persistedId, turnId);
+      // 通知可能早于请求回执，不能用 ACK 把终态重新改为 RUNNING。
+      const completed = this.db.getEvents(taskId).some(event => event.type === 'TurnCompleted' && event.payload.turnId === turnId);
+      if (completed) this.db.confirmTurnInputs(taskId, turnId);
+      else this.appendEvent({
+        id: `${taskId}:${turnId}:started`, type: 'TurnStarted', taskId, turnId,
+        payload: { turnId }, timestamp: new Date().toISOString(),
+      }, { executionState: 'RUNNING', attentionState: 'NONE' });
+      return ok({ turnId });
+    } catch (error) {
+      if (persistedId) {
+        this.db.markInputUncertain(persistedId);
+        this.db.updateTaskStates(taskId, 'INTERRUPTED', 'UNCERTAIN');
+      }
+      return err((error as Error).message);
+    } finally { this.startingTasks.delete(taskId); }
   }
 
   private setupHandlers(): void {
@@ -259,53 +301,32 @@ export class AgentManagerService {
         }
       },
     );
-    this.register(
-      IPC_CHANNELS.TURN_START,
-      async (taskId: string): Promise<IpcResult<{ turnId: string }>> => {
-        try {
-          if (!this.runtime) {
-            return err<{ turnId: string }>("Runtime Session Manager 未初始化");
-          }
-          const task = this.db.getTask(taskId);
-          if (!task) return err<{ turnId: string }>("Task not found");
-          if (!task.worktreePath) {
-            return err<{ turnId: string }>("Task 尚未创建 Worktree");
-          }
-
-          // 同一 Task 重复 startTurn：复用既有 Runtime Session；
-          // 还没有会话时按 worktree 目录启动 thread。
-          let session = this.runtime.getSession(taskId);
-          if (!session) {
-            session = await this.runtime.openSession({
-              taskId,
-              cwd: task.worktreePath,
-            });
-          }
-          this.db.updateTaskStates(taskId, "RUNNING", "NONE");
-          const turnId = await this.runtime.startTurn(taskId, task.prompt);
-
-          // 服务端回执前先行广播 TurnStarted，让 Renderer 立刻有反馈；
-          // 服务端的 turn/started 通知会再次落到事件流并被 handleCodexNotification 归并。
-          this.appendEvent({
-            id: generateId("evt"),
-            type: "TurnStarted",
-            taskId,
-            turnId,
-            payload: { turnId, prompt: task.prompt, threadId: session.threadId },
-            timestamp: new Date().toISOString(),
-          });
-
-          return ok({ turnId });
-        } catch (e) {
-          return err<{ turnId: string }>((e as Error).message);
-        }
-      },
-    );
+    this.register(IPC_CHANNELS.TURN_START, async (taskId: string) => {
+      const task = this.db.getTask(taskId);
+      if (!task) return err('Task not found');
+      if (this.db.listUncertainInputs().some(input => input.taskId === taskId)) return err('请先处理不确定输入');
+      return this.sendInput(taskId, task.prompt);
+    });
+    this.register(IPC_CHANNELS.INPUT_RESOLVE, async (id: string, action: 'resend' | 'discard') => {
+      try {
+        const input = this.db.resolveInput(id, action);
+        if (action === 'resend') return this.sendInput(input.taskId, input.text, input.id);
+        this.appendEvent({ id: generateId('evt'), type: 'InputResolved', taskId: input.taskId,
+          turnId: null, payload: { inputId: id, action }, timestamp: new Date().toISOString() },
+        { executionState: this.db.listUncertainInputs().some(other => other.taskId === input.taskId) ? 'INTERRUPTED' : 'IDLE', attentionState: 'USER_INPUT' });
+        return ok(undefined);
+      } catch (error) { return err((error as Error).message); }
+    });
     this.register(
       IPC_CHANNELS.TURN_STEER,
       async (taskId: string, text: string): Promise<IpcResult<void>> => {
+        let inputId: string | undefined;
         try {
           if (!this.runtime) return err<void>("Runtime Session Manager 未初始化");
+          const active = this.runtime.getSession(taskId)?.activeTurnId;
+          if (!active) return err<void>('Task 没有活动 Turn');
+          inputId = this.db.recordInput(taskId, text).id;
+          this.db.bindInputTurn(inputId, active);
           await this.runtime.steerTurn(taskId, text);
           const session = this.runtime.getSession(taskId);
           this.appendEvent({
@@ -318,6 +339,7 @@ export class AgentManagerService {
           });
           return ok(undefined);
         } catch (e) {
+          if (inputId) this.db.markInputUncertain(inputId);
           return err<void>((e as Error).message);
         }
       },
@@ -417,7 +439,7 @@ export class AgentManagerService {
         try {
           const tasks = this.db.listTasks() ?? [];
           const events = this.db.getAllEvents() ?? [];
-          return ok({ tasks, events });
+          return ok({ tasks, events, uncertainInputs: this.db.listUncertainInputs(), recoveryReason: this.db.recoveryReason });
         } catch (e) {
           return err<{ tasks: Task[]; events: NormalizedEvent[] }>((e as Error).message);
         }

@@ -16,6 +16,7 @@ export default defineConfig({
     resolve: { alias: workbenchAliases },
     build: {
       rollupOptions: {
+        external: ['node:sqlite'],
         input: {
           index: resolve(__dirname, "apps/desktop/main/src/index.ts"),
           "manager-bridge": resolve(__dirname, "apps/desktop/main/src/manager-bridge.ts"),

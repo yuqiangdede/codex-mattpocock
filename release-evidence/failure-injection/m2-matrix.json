@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-09-06T13:51:52.125Z",
+  "gate": "m2-fault-injection",
+  "status": "INCOMPLETE",
+  "exitCode": 1,
+  "runs": [
+    {
+      "name": "process",
+      "command": "node scripts/test-agent-manager.mjs",
+      "exitCode": 1,
+      "evidence": "release-evidence/failure-injection/process.log"
+    },
+    {
+      "name": "event-recovery",
+      "command": "node tests/integration/event-recovery.mjs",
+      "exitCode": 0,
+      "evidence": "release-evidence/failure-injection/event-recovery.log"
+    },
+    {
+      "name": "workflow",
+      "command": "node tests/integration/workflow.mjs",
+      "exitCode": 1,
+      "evidence": "release-evidence/failure-injection/workflow.log"
+    },
+    {
+      "name": "recovery-mode",
+      "command": "node tests/integration/recovery-mode.mjs",
+      "exitCode": 0,
+      "evidence": "release-evidence/failure-injection/recovery-mode.log"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario": "Renderer Kill",
+      "status": "SANDBOX-BLOCKED",
+      "detail": "沙箱内 git 无法创建 task/<id> 分支（已知环境限制）；沙箱外可跑通。真实 Renderer 崩溃、后台 Task 写入及重载事件一致已测；活动模型 Turn 持续运行 BLOCKED/NOT RUN"
+    },
+    {
+      "scenario": "Electron Main Kill",
+      "status": "SANDBOX-BLOCKED",
+      "detail": "沙箱内 git 无法创建 task/<id> 分支（已知环境限制）；沙箱外可跑通。真实 Main 强杀、Manager 子进程退出、持久化任务重开已测；活动 Turn 中断 BLOCKED/NOT RUN"
+    },
+    {
+      "scenario": "Agent Manager Kill",
+      "status": "SANDBOX-BLOCKED",
+      "detail": "沙箱内 git 无法创建 task/<id> 分支（已知环境限制）；沙箱外可跑通。真实强杀时请求失败已测；预置 RUNNING/SENT 现场重建及输入丢弃持久化已测；活动 Runtime/Git 三方协调 NOT RUN"
+    },
+    {
+      "scenario": "App Server Kill",
+      "status": "NOT RUN",
+      "detail": "尚无本轮 Profile 隔离强杀与不重放验收脚本"
+    },
+    {
+      "scenario": "Provider SSE 中断",
+      "status": "BLOCKED/NOT RUN",
+      "detail": "未配置兼容的真实 Provider 与凭据，Stage Budget 恢复未验收"
+    },
+    {
+      "scenario": "重复 Runtime Event",
+      "status": "PASS",
+      "detail": "Storage 公开事件接口幂等去重、同 ID 不同内容拒绝、重建不复制事件、中断恢复可重复执行、50MB 旁路文件、恢复快照均已验证通过"
+    },
+    {
+      "scenario": "SQLite Migration 失败",
+      "status": "PASS",
+      "detail": "不支持的迁移版本（user_version=999）进入只读 Recovery Mode；保留原数据并拒绝写入已验证通过"
+    },
+    {
+      "scenario": "Event 与 Artifact 不一致",
+      "status": "NOT RUN",
+      "detail": "尚无 Event/Artifact 协调器与故障注入"
+    },
+    {
+      "scenario": "Ticket/Spec 外部修改",
+      "status": "SANDBOX-BLOCKED",
+      "detail": "沙箱内 git 无法创建 task/<id> 分支（已知环境限制）；沙箱外可跑通。Workflow 公开接口与真实临时 Git worktree 回归"
+    },
+    {
+      "scenario": "Target Branch 前进/Dirty",
+      "status": "SANDBOX-BLOCKED",
+      "detail": "沙箱内 git 无法创建 task/<id> 分支（已知环境限制）；沙箱外可跑通。Workflow Preflight 与真实临时 Git worktree 回归"
+    },
+    {
+      "scenario": "Skill 更新失败/离线",
+      "status": "NOT RUN",
+      "detail": "尚无最后验证 Bundle 回退故障注入"
+    }
+  ]
+}

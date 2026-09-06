@@ -5,6 +5,7 @@ export const MANAGER_REQUEST_CHANNELS = [
   'project:scan', 'project:list', 'task:create', 'task:list', 'task:get',
   'worktree:create', 'turn:start', 'turn:steer', 'turn:interrupt',
   'approval:decide', 'diff:get', 'verify:run', 'recovery:load',
+  'input:resolve',
 ] as const;
 export interface ManagerEnvelope {
   version: number;
@@ -33,6 +34,7 @@ export function validManagerRequest(channel: unknown, args: unknown): args is un
     case 'task:list': return args.length === 0 || (args.length === 1 && (args[0] === undefined || typeof args[0] === 'string'));
     case 'task:create': return strings(2);
     case 'approval:decide': return strings(2) && ['approved', 'denied'].includes(args[1] as string);
+    case 'input:resolve': return strings(2) && ['resend', 'discard'].includes(args[1] as string);
     case 'project:scan': case 'task:get': case 'worktree:create':
     case 'turn:start': case 'diff:get': case 'verify:run': return strings(1);
     default: return false;

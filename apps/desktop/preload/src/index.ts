@@ -67,6 +67,7 @@ const api = {
     ipcRenderer.invoke(IPC_CHANNELS.VERIFY_RUN, taskId),
 
   // Recovery
+  resolveInput: (id: string, action: 'resend' | 'discard') => ipcRenderer.invoke(IPC_CHANNELS.INPUT_RESOLVE, id, action),
   loadRecovery: (): Promise<IpcResult<{ tasks: Task[]; events: NormalizedEvent[] }>> =>
     ipcRenderer.invoke(IPC_CHANNELS.RECOVERY_LOAD),
 

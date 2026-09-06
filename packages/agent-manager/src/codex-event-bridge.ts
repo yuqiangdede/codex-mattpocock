@@ -35,6 +35,15 @@ export function mapCodexNotification(
 ): CodexEventMapping | null {
   const timestamp = new Date().toISOString();
   switch (notification.method) {
+    case 'item/started':
+    case 'item/completed': {
+      const params = notification.params as { item: { id: string; type: string; aggregatedOutput?: string }; turnId: string };
+      if (params.item.type !== 'commandExecution') return null;
+      const type = notification.method === 'item/started' ? 'ToolStarted' : 'ToolCompleted';
+      return { event: { id: `${ctx.taskId}:${params.turnId}:${params.item.id}:${type}`,
+        type, taskId: ctx.taskId, turnId: params.turnId, timestamp,
+        payload: { itemId: params.item.id, output: params.item.aggregatedOutput ?? '' } } };
+    }
     case "thread/started": {
       const thread = (notification.params as { thread: { id: string; preview?: string; modelProvider: string; model: string; cwd: string } }).thread;
       return {
@@ -50,7 +59,7 @@ export function mapCodexNotification(
     case "turn/started": {
       const turn = (notification.params as { turn: { id: string } }).turn;
       return {
-        event: makeEvent("TurnStarted", ctx, timestamp, { turnId: turn.id }),
+        event: { ...makeEvent("TurnStarted", ctx, timestamp, { turnId: turn.id }), id: `${ctx.taskId}:${turn.id}:started`, turnId: turn.id },
         taskState: { executionState: "RUNNING", attentionState: "NONE" },
       };
     }
@@ -58,11 +67,11 @@ export function mapCodexNotification(
       const turn = (notification.params as { turn: { id: string; status: string; error?: unknown } }).turn;
       const failed = turn.status === "failed";
       return {
-        event: makeEvent("TurnCompleted", ctx, timestamp, {
+        event: { ...makeEvent("TurnCompleted", ctx, timestamp, {
           turnId: turn.id,
           status: turn.status,
           error: turn.error ?? null,
-        }),
+        }), id: `${ctx.taskId}:${turn.id}:completed`, turnId: turn.id },
         taskState: failed
           ? { executionState: "FAILED", attentionState: "REVIEW" }
           : { executionState: "IDLE", attentionState: "NONE" },

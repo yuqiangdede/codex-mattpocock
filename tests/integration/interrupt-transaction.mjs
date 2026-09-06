@@ -11,8 +11,8 @@ try {
   db.insertTask({ id: 'task', projectId: 'project', prompt: '中断回滚验证', lifecycle: 'OPEN', executionState: 'RUNNING', attentionState: 'NONE', worktreePath: null, worktreeBranch: null, createdAt: '2026-09-05T00:00:00Z' });
   const event = { id: 'event', type: 'TurnStarted', taskId: 'task', turnId: 'turn', payload: {}, timestamp: '2026-09-05T00:00:00Z' };
   db.appendEvent(event);
-  // 使用真实唯一键冲突使事件落盘失败，观察公开查询接口返回的状态是否回滚。
-  assert.throws(() => db.appendEvent(event, { executionState: 'INTERRUPTED', attentionState: 'UNCERTAIN' }));
+  // 相同 ID 携带不同事件仍须拒绝；精确重送现在属于幂等成功。
+  assert.throws(() => db.appendEvent({ ...event, type: 'TurnInterrupted' }, { executionState: 'INTERRUPTED', attentionState: 'UNCERTAIN' }), /冲突/);
   assert.equal(db.getTask('task').executionState, 'RUNNING');
   assert.equal(db.getEvents('task').length, 1);
   assert.equal(db.getProjection('task').status, 'TurnStarted');

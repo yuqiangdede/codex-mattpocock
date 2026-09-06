@@ -27,7 +27,8 @@ declare global {
       decideApproval: (approvalId: string, decision: "approved" | "denied") => Promise<{ ok: boolean; error?: string }>;
       getDiff: (taskId: string) => Promise<{ ok: boolean; data?: DiffResult; error?: string }>;
       runVerification: (taskId: string) => Promise<{ ok: boolean; data?: VerificationResult; error?: string }>;
-      loadRecovery: () => Promise<{ ok: boolean; data?: { tasks: Task[]; events: NormalizedEvent[] }; error?: string }>;
+      loadRecovery: () => Promise<{ ok: boolean; data?: { tasks: Task[]; events: NormalizedEvent[]; uncertainInputs: import('@workbench/shared').UncertainInput[] }; error?: string }>;
+      resolveInput: (id: string, action: 'resend' | 'discard') => Promise<{ ok: boolean; error?: string }>;
       onEventStream: (callback: (event: NormalizedEvent) => void) => void;
     };
   }
@@ -52,6 +53,7 @@ function App(): React.ReactElement {
   const [rightPanel, setRightPanel] = useState<Panel>("context");
   const [composer, setComposer] = useState("");
   const [scanPath, setScanPath] = useState("");
+  const [uncertainInputs, setUncertainInputs] = useState<import('@workbench/shared').UncertainInput[]>([]);
 
   // Load initial data
   useEffect(() => {
@@ -60,7 +62,7 @@ function App(): React.ReactElement {
 
     // Subscribe to event stream
     window.workbench.onEventStream((evt) => {
-      setEvents((prev) => [...prev, evt]);
+      setEvents((prev) => prev.some(event => event.id === evt.id) ? prev : [...prev, evt]);
     });
 
     // Subscribe to approval requests
@@ -88,6 +90,7 @@ function App(): React.ReactElement {
     if (result.ok && result.data) {
       setTasks(result.data.tasks);
       setEvents(result.data.events);
+      setUncertainInputs(result.data.uncertainInputs ?? []);
       if (result.data.tasks.length > 0) {
         setSelectedTask(result.data.tasks[0]);
       }
@@ -216,6 +219,19 @@ function App(): React.ReactElement {
       {/* Center Panel */}
       <div style={styles.centerPanel}>
         <div style={styles.timeline}>
+          {uncertainInputs.filter(input => input.taskId === selectedTask?.id).map(input => (
+            <div key={input.id} role="alert">
+              <strong>不确定输入：请检查执行现场后决定是否重发</strong>
+              <pre>{input.text}</pre>
+              {(['resend', 'discard'] as const).map(action => (
+                <button key={action} onClick={async () => {
+                  const result = await window.workbench.resolveInput(input.id, action);
+                  if (!result.ok) window.alert(result.error);
+                  await loadRecovery();
+                }}>{action === 'resend' ? '重发' : '丢弃'}</button>
+              ))}
+            </div>
+          ))}
           <h2 style={styles.panelTitle}>Timeline</h2>
           {events
             .filter((e) => !selectedTask || e.taskId === selectedTask.id)

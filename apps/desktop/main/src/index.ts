@@ -39,7 +39,7 @@ app.whenReady().then(async () => {
     entry: path.join(__dirname, 'agent-manager.js'),
     dataDir: app.getPath('userData'),
     onNotification: (channel, payload) => {
-      if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
+      if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.webContents.isDestroyed() && !mainWindow.webContents.isCrashed()) mainWindow.webContents.send(channel, payload);
     },
     onFailure: (message) => {
       console.error(message);

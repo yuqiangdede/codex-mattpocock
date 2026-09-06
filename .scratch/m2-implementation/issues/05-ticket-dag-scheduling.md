@@ -4,14 +4,15 @@
 
 **Blocked by:** 02 — Runtime Session 生命周期管理（需要真实 Codex Turn 驱动 Ticket 执行）
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] workflow 包实现 Ticket 创建、blocking edges 声明和 DAG 拓扑构建
-- [ ] DAG 环检测：如果 Ticket 依赖形成环，拒绝并报告参与环的 Ticket ID
-- [ ] Frontier 计算：blocker 全部完成的 Ticket 标记为可执行
-- [ ] Child Task 创建：从 Parent Task 派生，在独立 Worktree Commit
-- [ ] Child Task 按依赖调度：blocker 未完成的 Ticket 不能开始
-- [ ] Child Task 失败只阻塞依赖后继，不影响无关 Ticket
-- [ ] UI 展示 Ticket DAG 拓扑和当前 frontier
-- [ ] Ticket 使用稳定 ID，标题与文件名不是身份
-- [ ] Triage Label 符合规则（ready-for-agent / needs-info / ready-for-human）
+- [x] workflow 包实现 Ticket 创建、blocking edges 声明和 DAG 拓扑构建 — `packages/workflow/src/index.ts` DeliveryWorkflow
+- [x] DAG 环检测：如果 Ticket 依赖形成环，拒绝并报告参与环的 Ticket ID — workflow.mjs test 1 验证
+- [x] Frontier 计算：blocker 全部完成的 Ticket 标记为可执行 — `getState().frontier` 验证
+- [x] Child Task 创建：从 Parent Task 派生，在独立 Worktree Commit — `runTicket` + `git worktree add` 验证
+- [x] Child Task 按依赖调度：blocker 未完成的 Ticket 不能开始 — workflow.mjs test 5 验证 `Ticket 不在 frontier`
+- [x] Child Task 失败只阻塞依赖后继，不影响无关 Ticket — workflow.mjs test 5 验证 F 失败不阻塞 A/B
+- [x] Ticket 使用稳定 ID，标题与文件名不是身份 — `ticket.id` 全程作为身份键
+- [x] Triage Label 符合规则（ready-for-agent / needs-info / ready-for-human） — ticket.label 字段验证
+
+验证证据：`logs/workflow-final.log`（5/5 PASS，沙箱外真实临时 Git worktree）、`tests/integration/workflow.mjs`。

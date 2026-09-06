@@ -1,0 +1,7 @@
+PASS: 重复事件无副作用；同 ID 不同内容拒绝
+PASS: 重建不复制事件；中断恢复可重复执行
+PASS: 未确认输入显式处理；Runtime 身份持久化
+PASS: 50MB 输出旁路文件，事件与 Renderer 仅携带受限 Tail
+PASS: 恢复任务状态使用已提交事件快照
+(node:41564) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)

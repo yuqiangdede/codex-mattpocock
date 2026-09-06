@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 const root = resolve(import.meta.dirname, '..');
 mkdirSync(resolve(root, 'cache'), { recursive: true });
 const env = { ...process.env };
+env.WORKBENCH_TEST_NODE = process.execPath;
 delete env.ELECTRON_RUN_AS_NODE;
 // headless 环境 Electron GPU 进程无法启动；用软件光栅 + 禁用沙箱绕过。
 env.ELECTRON_DISABLE_GPU = '1';
@@ -42,5 +43,11 @@ for (const suite of ['agent-manager', 'boot-smoke']) {
   if (result.exitCode !== 0) break;
 }
 mkdirSync(resolve(root, 'release-evidence'), { recursive: true });
-writeFileSync(resolve(root, 'release-evidence/agent-manager-integration.json'), JSON.stringify({ timestamp: new Date().toISOString(), results }, null, 2));
+const evidence = { timestamp: new Date().toISOString(), results, blocked: [
+  { scenario: '模型编辑、真实审批及活动 Turn 下 Renderer/Main/Manager Kill', status: 'BLOCKED/NOT RUN', reason: '隔离测试未配置可用 Provider Profile 与凭据；本地持久化 fixture 不替代真实活动 Turn' },
+  { scenario: 'Provider SSE 中断与 Stage Budget 恢复', status: 'BLOCKED/NOT RUN', reason: '需要兼容的真实 Provider；当前未配置' },
+] };
+writeFileSync(resolve(root, 'release-evidence/agent-manager-integration.json'), JSON.stringify(evidence, null, 2));
+mkdirSync(resolve(root, 'release-evidence/failure-injection'), { recursive: true });
+writeFileSync(resolve(root, 'release-evidence/failure-injection/process-boundaries.json'), JSON.stringify(evidence, null, 2));
 process.exitCode = results.some(r => r.exitCode !== 0) ? 1 : 0;

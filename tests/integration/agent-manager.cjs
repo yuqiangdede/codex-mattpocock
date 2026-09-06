@@ -29,7 +29,7 @@ app.whenReady().then(async () => {
     dataDir: path.join(testRoot, 'data'),
     onNotification: (channel, payload) => {
       notifications.push({ channel, payload });
-      if (window && !window.isDestroyed()) window.webContents.send(channel, payload);
+      if (window && !window.isDestroyed() && !window.webContents.isCrashed()) window.webContents.send(channel, payload);
     },
     onFailure: (message) => console.error(message),
   });
@@ -69,26 +69,39 @@ app.whenReady().then(async () => {
   const wt = await value('createWorktree', task.id);
   assert.equal(wt.branch, `task/${task.id}`);
   assert.equal((await value('runVerification', task.id)).passed, false);
-  await value('startTurn', task.id);
+  const beforeStart = await value('loadRecovery');
+  const unavailable = await api('startTurn', task.id);
+  assert.equal(unavailable.ok, false);
+  assert.match(unavailable.error, /Provider Profile|Runtime Session Manager 未初始化/);
+  assert.deepEqual(await value('loadRecovery'), beforeStart, 'Runtime 前置条件失败不得写入虚假活动 Turn');
   const approvals = await window.webContents.executeJavaScript('window.receivedApprovals');
-  assert.equal(approvals.length, 1);
-  assert.equal(approvals[0].taskId, task.id);
-  await value('decideApproval', approvals[0].id, 'approved');
+  assert.equal(approvals.length, 0, '未启动真实 Runtime 不得制造审批');
   assert.equal((await value('getTask', task.id)).executionState, 'IDLE');
+  // 本地 fixture 修改验证 Git/Verify 的真实跨进程边界，不冒称模型生成代码。
+  fs.writeFileSync(path.join(wt.path, 'index.ts'), "export function hello() { return 'hello world'; }\n");
   assert.match((await value('getDiff', task.id)).files[0].patch, /hello world/);
   assert.equal((await value('runVerification', task.id)).passed, true);
   const before = await value('loadRecovery');
   const streamed = await window.webContents.executeJavaScript('window.receivedEvents');
-  assert.ok(streamed.some(e => e.type === 'TurnCompleted' && e.taskId === task.id));
+  assert.ok(streamed.some(e => e.type === 'VerificationCompleted' && e.taskId === task.id));
   const loaded = once(window.webContents, 'did-finish-load');
   window.webContents.reload();
   await loaded;
   const after = await value('loadRecovery');
   assert.deepEqual(after, before);
   assert.equal((await api('getTask', 'missing-task')).ok, false);
-  assert.equal((await api('decideApproval', approvals[0].id, 'approved')).ok, false);
+  assert.equal((await api('decideApproval', 'missing-approval', 'approved')).ok, false);
   assert.equal((await api('createTask', null, 'invalid')).ok, false);
-  console.log('PASS: 原有 Preload → Main → Utility Process 完整八步切片、重载与业务错误');
+  console.log('PASS: Preload → Main → Utility Process 项目/任务/Git/Verify、重载与 Runtime 未配置错误');
+  const crashed = once(window.webContents, 'render-process-gone');
+  window.webContents.forcefullyCrashRenderer();
+  await crashed;
+  const whileDown = await manager.request('task:create', [scanned.id, 'Renderer 崩溃期间仍可持久化']);
+  assert.equal(whileDown.ok, true, whileDown.error);
+  await window.loadURL('data:text/html,<meta http-equiv="Content-Security-Policy" content="default-src %27none%27"><title>Renderer 恢复验证</title>');
+  assert.equal((await value('getTask', whileDown.data.id)).prompt, whileDown.data.prompt);
+  assert.deepEqual((await value('loadRecovery')).events.filter(e => e.taskId === task.id), before.events.filter(e => e.taskId === task.id));
+  console.log('PASS: 真实 Renderer Kill 后 Manager 继续写入，重载保留原任务事件并加载新增任务');
 
   // 直接操作真实消息端口，检查 ADR 中请求 ACK 和重复投递语义。
   rawChild = utilityProcess.fork(path.join(root, 'out/main/agent-manager.js'), [path.join(testRoot, 'protocol'), String(process.pid)], { stdio: 'pipe' });
@@ -114,13 +127,13 @@ app.whenReady().then(async () => {
   await rawExit;
   rawChild = null;
 
-  await value('startTurn', task.id);
   await manager.stop();
   manager = new AgentManagerClient({ entry: path.join(root, 'out/main/agent-manager.js'), dataDir: path.join(testRoot, 'data'), onNotification: () => {}, onFailure: message => console.error(message) });
   await manager.ready;
   const recovered = await manager.request('task:get', [task.id]);
-  assert.equal(recovered.data.executionState, 'INTERRUPTED', '正常退出必须持久化活动 Turn 的中断状态');
-  console.log('PASS: 正常退出关闭数据库并持久化活动 Turn 中断状态');
+  assert.equal(recovered.data.executionState, 'IDLE', '正常退出后无活动 Turn 的任务应保持 IDLE');
+  assert.equal(recovered.data.id, task.id);
+  console.log('PASS: 正常退出重开保留真实任务 ID 和状态');
 
   await manager.stop();
   const failures = [];
@@ -149,9 +162,46 @@ app.whenReady().then(async () => {
   manager = new AgentManagerClient({ entry: path.join(root, 'out/main/agent-manager.js'), dataDir: orphanDir, onNotification: () => {}, onFailure: console.error });
   await manager.ready;
   const interrupted = (await manager.request('task:get', [orphan.taskId])).data;
-  assert.equal(interrupted.executionState, 'INTERRUPTED');
-  assert.equal(interrupted.attentionState, 'UNCERTAIN');
-  console.log('PASS: 强杀 Main 后无遗留子进程，重开将遗留 RUNNING 标为 INTERRUPTED / UNCERTAIN');
+  assert.equal(interrupted.id, orphan.taskId);
+  assert.equal(interrupted.executionState, 'IDLE');
+  assert.equal(interrupted.attentionState, 'NONE');
+  console.log('PASS: 强杀 Main 后无遗留 Manager 子进程，重开保留已持久化任务');
+  await manager.stop();
+  const recoveryDir = path.join(testRoot, 'seeded-recovery');
+  assert.ok(process.env.WORKBENCH_TEST_NODE, '通过测试 runner 传入本轮 Node 路径');
+  execFileSync(process.env.WORKBENCH_TEST_NODE, [path.join(root, 'scripts/seed-recovery-fixture.mjs'), recoveryDir], { cwd: root, stdio: 'pipe', windowsHide: true });
+  const seed = JSON.parse(fs.readFileSync(path.join(recoveryDir, 'fixture.json'), 'utf8'));
+  let firstRecovery;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    manager = new AgentManagerClient({ entry: path.join(root, 'out/main/agent-manager.js'), dataDir: recoveryDir, onNotification: () => {}, onFailure: console.error });
+    await manager.ready;
+    const result = await manager.request('recovery:load', []);
+    assert.equal(result.ok, true, result.error);
+    const snapshot = result.data;
+    assert.equal(snapshot.tasks[0].id, seed.taskId);
+    assert.equal(snapshot.tasks[0].executionState, 'INTERRUPTED');
+    assert.equal(snapshot.tasks[0].attentionState, 'UNCERTAIN');
+    assert.equal(snapshot.events.filter(e => e.id === seed.eventId).length, 1);
+    assert.equal(snapshot.events.filter(e => e.type === 'TurnInterrupted').length, 1);
+    assert.deepEqual(snapshot.uncertainInputs, [{ id: seed.inputId, taskId: seed.taskId, text: '未经确认不得自动重放', status: 'UNCERTAIN' }]);
+    if (firstRecovery) assert.deepEqual(snapshot, firstRecovery, '再次启动不增加事件、不重发输入、不改变任务标识');
+    firstRecovery = snapshot;
+    if (attempt === 1) {
+      const discarded = await manager.request('input:resolve', [seed.inputId, 'discard']);
+      assert.equal(discarded.ok, true, discarded.error);
+      assert.deepEqual((await manager.request('recovery:load', [])).data.uncertainInputs, []);
+      assert.equal((await manager.request('input:resolve', [seed.inputId, 'discard'])).ok, false, '已处理输入不得重复执行决定');
+    }
+    await manager.stop();
+  }
+  manager = new AgentManagerClient({ entry: path.join(root, 'out/main/agent-manager.js'), dataDir: recoveryDir, onNotification: () => {}, onFailure: console.error });
+  await manager.ready;
+  const afterDiscard = (await manager.request('recovery:load', [])).data;
+  assert.deepEqual(afterDiscard.uncertainInputs, [], '丢弃决定必须跨进程重启持久化');
+  assert.deepEqual(afterDiscard.events.filter(e => e.type !== 'InputResolved'), firstRecovery.events, '丢弃与重启不伪造 Runtime 事件');
+  assert.equal(afterDiscard.events.filter(e => e.type === 'InputResolved').length, 1, '丢弃决定只持久化一次');
+  console.log('PASS: 预置 RUNNING/SENT 崩溃现场经真实 Manager 双次启动恢复，任务/事件/不确定输入保持幂等');
+  console.log('BLOCKED/NOT RUN: 真实模型编辑/审批、活动 Turn 下 Renderer/Main Kill、Provider SSE 中断；隔离测试目录无可用 Provider 配置与凭据');
 }).then(async () => {
   await manager.stop();
   window?.destroy();

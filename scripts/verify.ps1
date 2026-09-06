@@ -19,7 +19,7 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [ValidateSet("typecheck", "spike", "integration", "all")]
+    [ValidateSet("typecheck", "spike", "integration", "m2-fault-injection", "all")]
     [string[]]$Gate = @("typecheck")
 )
 
@@ -299,6 +299,20 @@ try {
             & $nodeExe (Join-Path $projectRoot 'tests/integration/interrupt-transaction.mjs')
             if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
             & $nodeExe (Join-Path $projectRoot 'scripts/test-agent-manager.mjs')
+            if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
+        }
+    }
+
+    # M2 故障矩阵为严格门禁；部分通过与缺少真实 Provider 均不得返回成功。
+    if ($Gate -contains 'm2-fault-injection' -or $Gate -contains 'all') {
+        & $nodeExe (Join-Path $projectRoot 'node_modules/typescript/bin/tsc') --build
+        if ($LASTEXITCODE -eq 0) {
+            & $nodeExe (Join-Path $projectRoot 'node_modules/electron-vite/bin/electron-vite.js') build
+        }
+        if ($LASTEXITCODE -ne 0) {
+            $exitCode = 1
+        } else {
+            & $nodeExe (Join-Path $projectRoot 'scripts/test-m2-fault-injection.mjs')
             if ($LASTEXITCODE -ne 0) { $exitCode = 1 }
         }
     }

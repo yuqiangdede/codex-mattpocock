@@ -24,14 +24,29 @@
 - Electron 33/34 内嵌 Node 20 **不支持** `node:sqlite`，必须 Electron 35+（Node 22）。已升到 35.7.5。
 - Provider（api.qnaigc.com）**不支持** OpenAI Responses API（404），只支持 Chat Completions；Probe 用双端点降级。Turn 的 UserInput 格式是 `{type:"text",text:"...",text_elements:[]}`，不是 message/content 包装。
 - `dist-build/`、`dist-release/`（515MB T-013 制品）已 gitignore，`runtime/` 与 `cache/` 同理。
+- **含斜杠的 git 引用在 agent 沙箱内建不出来**（是沙箱伪影，**不是**仓库/磁盘/git 缺陷）：沙箱里 `git branch task/x`、`git update-ref refs/heads/a/b`、`git tag t1/x` 静默失败（退出码 0 但无 ref），`git worktree add -b task/x` 报 `fatal: invalid reference`；不带斜杠的名字正常。同一命令同一仓库，命令被提权跑到沙箱外就全绿（看输出里有没有 `Sandbox bypassed` 横幅）。git 二进制不是变量（PortableGit 2.55 / 系统 Git 2.51 同结论）。
+  - 判定工具：`.scratch/m2-implementation/repro-08.mjs`（RED=你在沙箱里，别在这跑建 worktree / 建 `task/<id>` 分支的操作）。
+  - **不阻塞任何工单**：M2-05 与 M1 E2E 都能在沙箱外跑通，M1 E2E 实测 18/18。
+  - 详见 `.scratch/m2-implementation/issues/08-slashed-ref-creation-failure.md`。
+- **给 git.exe 传路径不要用 MSYS 形式**：`/d/code/x`、`/tmp/x` 会被当 Win32 字面路径，`git clone` 报 "does not exist" 并在 `D:\d\...`、`C:\tmp\...` 造残留目录。用 `D:/code/...`，目标路径用相对路径。
 
 ## 里程碑状态（截至 2026-09-05）
 
 - **M0 Spike 完成**：T-001~T-017 全 PASS，Go 决策在 `release-evidence/go-no-go-decision.md`，5 个停止条件全未触发。
 - **M1 纵向切片完成**：commit `b4e85b2`，8 步全通，E2E 18/18，冒烟退出 0。代码在 `packages/{shared,storage,git-worktree}` + `apps/desktop/{main,preload,renderer}`。
   - **注意**：M1 是直写代码完成的，**未经** to-spec → to-tickets → implement 流程。
-  - `packages/{agent-manager,workflow,runtime-codex,protocol}` 仍是 `export {}` 占位符。
-- **M2 工单 DAG 已发布**：7 个工单在 `.scratch/m2-implementation/issues/01~07-*.md`，拓扑图 `dag.md`。全部 `ready-for-agent`。
+- **M2-01 完成**：commit `1c5661e`。Agent Manager 迁入独立 Utility Process，Event Store 接管。M1 E2E 回归通过。
+- **M2-02 完成**：commit `dd9a711`。Runtime Session 接入真实 Codex App Server：移除 M1 模拟 Turn，写入协议客户端、受控认证 Helper、按 Profile 复用进程、Task→Thread 映射、approval 路由回真实 serverRequestId。`packages/runtime-codex` 从占位变成完整实现。runtime-codex 集成测试 19 PASS / 0 FAIL / 3 SKIPPED（thread/resume + 流式 Agent 消息需真实 Provider 凭据/turn 落地）。**M1 后续测试 (m1-e2e / agent-manager.cjs) 在 worktree:create 阶段被 git 2.55.0.windows.3 ref 校验阻塞（`fatal: invalid reference: task/<id>`），与本次重构无回归关系**。
+- **M2 frontier（2026-09-06 更新）**：03（持久化恢复协调，需在 tasks 表加 runtime_thread_id 列）与 05（Ticket DAG 调度）可并行启动。见 `.scratch/m2-implementation/dag.md`。
+
+## Runtime-codex 集成要点（本仓库已落地）
+
+- **Provider Secret 受控认证**：Profile 仅存元数据（baseUrl、modelId、secretEnvKey、wireApi）；Secret 落在 `dataDir/runtime-config/<profile-id>.secret`。Codex App Server 子进程环境用 `CHILD_ENV_ALLOWLIST`（13 keys）显式 allowlist，绝不继承父进程全量变量。对应 T-012 sentinel 检查点。
+- **App Server 进程复用**：`RuntimeSessionManager.serverFor(profile)` 用 Promise + Map 保证同一 Profile 并发请求只起一次进程；不同 Profile 各自独立 App Server；Task 维度共享同一 Profile 的进程。
+- **协议 Schema Hash**：`packages/protocol/src/index.ts` 里 `CODEX_SCHEMA_HASH = 8424cf18...`，与 `release-evidence/schema-hash.txt` 一致；runtime-codex 集成测试用真实 binary 时校验。
+- **protocol package 出口**：`@workbench/protocol` 提供 JSON-RPC 帧类型、initialize/thread/turn/approval 的请求/响应/通知类型、ServerRequest / ServerNotification / ApprovalDecision 等。`AppServer.jsonrpc 实际只暴露 JSON 帧，不持有业务语义。
+- **Provider wire_api 实测只有 `responses`**：之前 shared 类型写了 `responses | chat_completions` 是错的，按 `Config.wireApi` schema 收紧成单值。
+- **App Server 子进程**：`runtime/codex.exe`（Spike T-002 固定二进制）；`CODEX_APP_SERVER_ARGS = ["app-server"]`；transport 固定 stdio JSONL。
 - **setup-matt-pocock-skills 不需要重跑**：AGENTS.md + `docs/agents/{issue-tracker,triage-labels,domain}.md` 已在位，triage 技能已安装。`setup-matt-pocock-skills` 前置条件已满足。
 
 ## 工单与文档约定

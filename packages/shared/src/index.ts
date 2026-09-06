@@ -44,6 +44,13 @@ export interface Task {
   createdAt: string;
 }
 
+export interface UncertainInput {
+  id: string;
+  taskId: string;
+  text: string;
+  status: 'SENT' | 'UNCERTAIN' | 'CONFIRMED' | 'DISCARDED';
+}
+
 // ================================================================
 // Events (Normalized Event Store)
 // ================================================================
@@ -61,6 +68,7 @@ export type EventType =
   | "ApprovalRequested"
   | "ApprovalDecided"
   | "TurnSteered"
+  | "InputResolved"
   | "TurnCompleted"
   | "TurnInterrupted"
   | "VerificationCompleted";
@@ -149,6 +157,7 @@ export const IPC_CHANNELS = {
   DIFF_GET: "diff:get",
   VERIFY_RUN: "verify:run",
   RECOVERY_LOAD: "recovery:load",
+  INPUT_RESOLVE: "input:resolve",
   EVENT_STREAM: "event:stream",
 } as const;
 
